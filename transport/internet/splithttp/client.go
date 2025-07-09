@@ -34,8 +34,9 @@ type DefaultDialerClient struct {
 	closed          bool
 	httpVersion     string
 	// pool of net.Conn, created using dialUploadConn
-	uploadRawPool  *sync.Pool
-	dialUploadConn func(ctxInner context.Context) (net.Conn, error)
+	uploadRawPool    *sync.Pool
+	dialUploadConn   func(ctxInner context.Context) (net.Conn, error)
+	dpiBypassManager *DPIBypassManager
 }
 
 func (c *DefaultDialerClient) IsClosed() bool {
@@ -63,6 +64,11 @@ func (c *DefaultDialerClient) OpenStream(ctx context.Context, url string, body i
 	req.Header = c.transportConfig.GetRequestHeader(url)
 	if method == "POST" && !c.transportConfig.NoGRPCHeader {
 		req.Header.Set("Content-Type", "application/grpc")
+	}
+
+	// Apply DPI bypass to request
+	if c.dpiBypassManager != nil {
+		c.dpiBypassManager.ProcessRequest(req)
 	}
 
 	wrc = &WaitReadCloser{Wait: make(chan struct{})}
@@ -100,6 +106,11 @@ func (c *DefaultDialerClient) PostPacket(ctx context.Context, url string, body i
 	}
 	req.ContentLength = contentLength
 	req.Header = c.transportConfig.GetRequestHeader(url)
+
+	// Apply DPI bypass to request
+	if c.dpiBypassManager != nil {
+		c.dpiBypassManager.ProcessRequest(req)
+	}
 
 	if c.httpVersion != "1.1" {
 		resp, err := c.client.Do(req)

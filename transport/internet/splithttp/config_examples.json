@@ -1,0 +1,183 @@
+{
+  "basic_dpi_bypass": {
+    "network": "tcp",
+    "security": "tls",
+    "tlsSettings": {
+      "serverName": "example.com",
+      "allowInsecure": false
+    },
+    "xhttpSettings": {
+      "path": "/api/v1/",
+      "host": "example.com",
+      "mode": "packet-up",
+      "dpiBypass": {
+        "enabled": true,
+        "responseFragmentation": {
+          "enabled": true,
+          "maxChunkSize": 14000,
+          "randomDelay": {
+            "from": 100,
+            "to": 500
+          },
+          "connectionPooling": true
+        },
+        "connectionManagement": {
+          "maxConnectionLifetime": 30,
+          "connectionRotation": true,
+          "parallelConnections": 3,
+          "loadBalancing": "round-robin"
+        },
+        "trafficMasking": {
+          "userAgentRotation": true,
+          "acceptHeaders": ["text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"],
+          "refererGeneration": true,
+          "cookieManagement": true,
+          "compressionSupport": ["gzip", "deflate", "br"],
+          "browserBehaviorSimulation": true
+        },
+        "entropyReduction": {
+          "enabled": true,
+          "method": "structured-padding",
+          "targetEntropy": 0.7,
+          "patternInjection": true
+        }
+      }
+    }
+  },
+  "advanced_dpi_bypass": {
+    "network": "tcp",
+    "security": "tls",
+    "tlsSettings": {
+      "serverName": "cdn.example.com",
+      "allowInsecure": false
+    },
+    "xhttpSettings": {
+      "path": "/streaming/",
+      "host": "cdn.example.com",
+      "mode": "stream-up",
+      "dpiBypass": {
+        "enabled": true,
+        "responseFragmentation": {
+          "enabled": true,
+          "maxChunkSize": 12000,
+          "randomDelay": {
+            "from": 50,
+            "to": 300
+          },
+          "connectionPooling": true
+        },
+        "connectionManagement": {
+          "maxConnectionLifetime": 20,
+          "connectionRotation": true,
+          "parallelConnections": 5,
+          "loadBalancing": "random"
+        },
+        "trafficMasking": {
+          "userAgentRotation": true,
+          "acceptHeaders": [
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "application/json,text/plain,*/*"
+          ],
+          "refererGeneration": true,
+          "cookieManagement": true,
+          "compressionSupport": ["gzip", "deflate", "br"],
+          "browserBehaviorSimulation": true
+        },
+        "cdnHopping": {
+          "enabled": true,
+          "providers": ["cloudflare", "gcore", "aws"],
+          "rotationInterval": 45,
+          "failoverThreshold": 3
+        },
+        "entropyReduction": {
+          "enabled": true,
+          "method": "structured-padding",
+          "targetEntropy": 0.6,
+          "patternInjection": true
+        }
+      }
+    }
+  },
+  "minimal_dpi_bypass": {
+    "network": "tcp",
+    "security": "tls",
+    "tlsSettings": {
+      "serverName": "web.example.com",
+      "allowInsecure": false
+    },
+    "xhttpSettings": {
+      "path": "/",
+      "host": "web.example.com",
+      "mode": "auto",
+      "dpiBypass": {
+        "enabled": true,
+        "responseFragmentation": {
+          "enabled": true,
+          "maxChunkSize": 13000
+        },
+        "trafficMasking": {
+          "userAgentRotation": true,
+          "browserBehaviorSimulation": true
+        }
+      }
+    }
+  },
+  "russian_specific_config": {
+    "network": "tcp",
+    "security": "tls",
+    "tlsSettings": {
+      "serverName": "api.example.com",
+      "allowInsecure": false,
+      "fingerprint": "chrome"
+    },
+    "xhttpSettings": {
+      "path": "/api/",
+      "host": "api.example.com",
+      "mode": "packet-up",
+      "scMaxEachPostBytes": {
+        "from": 1000,
+        "to": 13000
+      },
+      "scMinPostsIntervalMs": {
+        "from": 100,
+        "to": 300
+      },
+      "dpiBypass": {
+        "enabled": true,
+        "responseFragmentation": {
+          "enabled": true,
+          "maxChunkSize": 14000,
+          "randomDelay": {
+            "from": 100,
+            "to": 400
+          },
+          "connectionPooling": true
+        },
+        "connectionManagement": {
+          "maxConnectionLifetime": 25,
+          "connectionRotation": true,
+          "parallelConnections": 4,
+          "loadBalancing": "round-robin"
+        },
+        "trafficMasking": {
+          "userAgentRotation": true,
+          "acceptHeaders": ["text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"],
+          "refererGeneration": true,
+          "cookieManagement": true,
+          "compressionSupport": ["gzip", "deflate", "br"],
+          "browserBehaviorSimulation": true
+        },
+        "entropyReduction": {
+          "enabled": true,
+          "method": "structured-padding",
+          "targetEntropy": 0.7,
+          "patternInjection": true
+        }
+      },
+      "xPaddingBytes": {
+        "from": 100,
+        "to": 1000
+      }
+    }
+  }
+}

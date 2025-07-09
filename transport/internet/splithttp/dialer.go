@@ -227,14 +227,18 @@ func createHTTPClient(dest net.Destination, streamSettings *internet.MemoryStrea
 		}
 	}
 
+	// Initialize DPI bypass manager
+	dpiBypassManager := NewDPIBypassManager(transportConfig.GetDPIBypassConfig())
+
 	client := &DefaultDialerClient{
 		transportConfig: transportConfig,
 		client: &http.Client{
 			Transport: transport,
 		},
-		httpVersion:    httpVersion,
-		uploadRawPool:  &sync.Pool{},
-		dialUploadConn: dialContext,
+		httpVersion:      httpVersion,
+		uploadRawPool:    &sync.Pool{},
+		dialUploadConn:   dialContext,
+		dpiBypassManager: dpiBypassManager,
 	}
 
 	return client

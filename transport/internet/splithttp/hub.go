@@ -27,13 +27,14 @@ import (
 )
 
 type requestHandler struct {
-	config    *Config
-	host      string
-	path      string
-	ln        *Listener
-	sessionMu *sync.Mutex
-	sessions  sync.Map
-	localAddr net.Addr
+	config           *Config
+	host             string
+	path             string
+	ln               *Listener
+	sessionMu        *sync.Mutex
+	sessions         sync.Map
+	localAddr        net.Addr
+	dpiBypassManager *DPIBypassManager
 }
 
 type httpSession struct {
@@ -181,9 +182,11 @@ func (h *requestHandler) ServeHTTP(writer http.ResponseWriter, request *http.Req
 				return
 			}
 			httpSC := &httpServerConn{
-				Instance:       done.New(),
-				Reader:         request.Body,
-				ResponseWriter: writer,
+				Instance:         done.New(),
+				Reader:           request.Body,
+				ResponseWriter:   writer,
+				dpiBypassManager: h.dpiBypassManager,
+				ctx:              request.Context(),
 			}
 			err = currentSession.uploadQueue.Push(Packet{
 				Reader: httpSC,
@@ -279,9 +282,11 @@ func (h *requestHandler) ServeHTTP(writer http.ResponseWriter, request *http.Req
 		writer.(http.Flusher).Flush()
 
 		httpSC := &httpServerConn{
-			Instance:       done.New(),
-			Reader:         request.Body,
-			ResponseWriter: writer,
+			Instance:         done.New(),
+			Reader:           request.Body,
+			ResponseWriter:   writer,
+			dpiBypassManager: h.dpiBypassManager,
+			ctx:              request.Context(),
 		}
 		conn := splitConn{
 			writer:     httpSC,
@@ -313,6 +318,8 @@ type httpServerConn struct {
 	*done.Instance
 	io.Reader // no need to Close request.Body
 	http.ResponseWriter
+	dpiBypassManager *DPIBypassManager
+	ctx              context.Context
 }
 
 func (c *httpServerConn) Write(b []byte) (int, error) {
@@ -321,6 +328,16 @@ func (c *httpServerConn) Write(b []byte) (int, error) {
 	if c.Done() {
 		return 0, io.ErrClosedPipe
 	}
+	
+	// Apply DPI bypass to response data
+	if c.dpiBypassManager != nil && c.dpiBypassManager.IsEnabled() {
+		err := c.dpiBypassManager.ProcessResponseData(c.ctx, b, c.ResponseWriter)
+		if err != nil {
+			return 0, err
+		}
+		return len(b), nil
+	}
+	
 	n, err := c.ResponseWriter.Write(b)
 	if err == nil {
 		c.ResponseWriter.(http.Flusher).Flush()
@@ -356,12 +373,13 @@ func ListenXH(ctx context.Context, address net.Address, port net.Port, streamSet
 		}
 	}
 	handler := &requestHandler{
-		config:    l.config,
-		host:      l.config.Host,
-		path:      l.config.GetNormalizedPath(),
-		ln:        l,
-		sessionMu: &sync.Mutex{},
-		sessions:  sync.Map{},
+		config:           l.config,
+		host:             l.config.Host,
+		path:             l.config.GetNormalizedPath(),
+		ln:               l,
+		sessionMu:        &sync.Mutex{},
+		sessions:         sync.Map{},
+		dpiBypassManager: NewDPIBypassManager(l.config.GetDPIBypassConfig()),
 	}
 	tlsConfig := getTLSConfig(streamSettings)
 	l.isH3 = len(tlsConfig.NextProtos) == 1 && tlsConfig.NextProtos[0] == "h3"

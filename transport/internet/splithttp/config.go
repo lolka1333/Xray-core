@@ -185,3 +185,99 @@ func init() {
 func (c RangeConfig) rand() int32 {
 	return int32(crypto.RandBetween(int64(c.From), int64(c.To)))
 }
+
+// DPI Bypass Configuration Helpers
+func (c *Config) GetDPIBypassConfig() *DPIBypassConfig {
+	if c.DpiBypass == nil {
+		return &DPIBypassConfig{Enabled: false}
+	}
+	return c.DpiBypass
+}
+
+func (c *Config) IsDPIBypassEnabled() bool {
+	return c.DpiBypass != nil && c.DpiBypass.Enabled
+}
+
+func (rf *ResponseFragmentationConfig) GetNormalizedMaxChunkSize() int32 {
+	if rf.MaxChunkSize == 0 {
+		return 14000 // Default to 14KB to stay under Russian 15KB limit
+	}
+	return rf.MaxChunkSize
+}
+
+func (rf *ResponseFragmentationConfig) GetNormalizedRandomDelay() RangeConfig {
+	if rf.RandomDelay == nil {
+		return RangeConfig{From: 100, To: 500}
+	}
+	return *rf.RandomDelay
+}
+
+func (cm *ConnectionManagementConfig) GetNormalizedMaxLifetime() int32 {
+	if cm.MaxConnectionLifetime == 0 {
+		return 30 // Default 30 seconds
+	}
+	return cm.MaxConnectionLifetime
+}
+
+func (cm *ConnectionManagementConfig) GetNormalizedParallelConnections() int32 {
+	if cm.ParallelConnections == 0 {
+		return 3 // Default 3 parallel connections
+	}
+	return cm.ParallelConnections
+}
+
+func (cm *ConnectionManagementConfig) GetNormalizedLoadBalancing() string {
+	if cm.LoadBalancing == "" {
+		return "round-robin"
+	}
+	return cm.LoadBalancing
+}
+
+func (tm *TrafficMaskingConfig) GetNormalizedAcceptHeaders() []string {
+	if len(tm.AcceptHeaders) == 0 {
+		return []string{"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"}
+	}
+	return tm.AcceptHeaders
+}
+
+func (tm *TrafficMaskingConfig) GetNormalizedCompressionSupport() []string {
+	if len(tm.CompressionSupport) == 0 {
+		return []string{"gzip", "deflate", "br"}
+	}
+	return tm.CompressionSupport
+}
+
+func (ch *CDNHoppingConfig) GetNormalizedProviders() []string {
+	if len(ch.Providers) == 0 {
+		return []string{"cloudflare", "gcore", "aws"}
+	}
+	return ch.Providers
+}
+
+func (ch *CDNHoppingConfig) GetNormalizedRotationInterval() int32 {
+	if ch.RotationInterval == 0 {
+		return 60 // Default 60 seconds
+	}
+	return ch.RotationInterval
+}
+
+func (ch *CDNHoppingConfig) GetNormalizedFailoverThreshold() int32 {
+	if ch.FailoverThreshold == 0 {
+		return 2 // Default 2 failures
+	}
+	return ch.FailoverThreshold
+}
+
+func (er *EntropyReductionConfig) GetNormalizedTargetEntropy() float64 {
+	if er.TargetEntropy == 0.0 {
+		return 0.7 // Default target entropy
+	}
+	return er.TargetEntropy
+}
+
+func (er *EntropyReductionConfig) GetNormalizedMethod() string {
+	if er.Method == "" {
+		return "structured-padding"
+	}
+	return er.Method
+}

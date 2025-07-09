@@ -22,6 +22,53 @@ message XmuxConfig {
   int64 hKeepAlivePeriod = 6;
 }
 
+// New configuration for DPI bypass
+message DPIBypassConfig {
+  bool enabled = 1;
+  ResponseFragmentationConfig responseFragmentation = 2;
+  ConnectionManagementConfig connectionManagement = 3;
+  TrafficMaskingConfig trafficMasking = 4;
+  CDNHoppingConfig cdnHopping = 5;
+  EntropyReductionConfig entropyReduction = 6;
+}
+
+message ResponseFragmentationConfig {
+  bool enabled = 1;
+  int32 maxChunkSize = 2;
+  RangeConfig randomDelay = 3;
+  bool connectionPooling = 4;
+}
+
+message ConnectionManagementConfig {
+  int32 maxConnectionLifetime = 1;
+  bool connectionRotation = 2;
+  int32 parallelConnections = 3;
+  string loadBalancing = 4;
+}
+
+message TrafficMaskingConfig {
+  bool userAgentRotation = 1;
+  repeated string acceptHeaders = 2;
+  bool refererGeneration = 3;
+  bool cookieManagement = 4;
+  repeated string compressionSupport = 5;
+  bool browserBehaviorSimulation = 6;
+}
+
+message CDNHoppingConfig {
+  bool enabled = 1;
+  repeated string providers = 2;
+  int32 rotationInterval = 3;
+  int32 failoverThreshold = 4;
+}
+
+message EntropyReductionConfig {
+  bool enabled = 1;
+  string method = 2;
+  double targetEntropy = 3;
+  bool patternInjection = 4;
+}
+
 message Config {
   string host = 1;
   string path = 2;
@@ -36,4 +83,7 @@ message Config {
   RangeConfig scStreamUpServerSecs = 11;
   XmuxConfig xmux = 12;
   xray.transport.internet.StreamConfig downloadSettings = 13;
+  
+  // New DPI bypass configuration
+  DPIBypassConfig dpiBypass = 14;
 }
