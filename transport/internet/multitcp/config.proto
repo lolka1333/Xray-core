@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package xray.transport.internet.multitcp;
+option csharp_namespace = "Xray.Transport.Internet.MultiTcp";
+option go_package = "github.com/xtls/xray-core/transport/internet/multitcp";
+option java_package = "com.xray.transport.internet.multitcp";
+option java_multiple_files = true;
+
+// Configuration for MultiTCP transport to bypass Russian censorship
+message Config {
+  // Maximum data per connection (bytes) before creating new connection
+  // Default: 15KB to avoid RU censorship blocking
+  uint32 max_data_per_conn = 1;
+  
+  // Maximum number of concurrent connections
+  // Default: 10 connections
+  uint32 max_connections = 2;
+  
+  // Connection timeout in seconds
+  // Default: 30 seconds
+  uint32 conn_timeout = 3;
+  
+  // Enable connection pooling and reuse
+  bool enable_pooling = 4;
+  
+  // Stale connection cleanup interval in seconds
+  // Default: 60 seconds
+  uint32 cleanup_interval = 5;
+  
+  // Enable adaptive data size based on connection success rate
+  bool adaptive_size = 6;
+  
+  // Minimum data size for adaptive algorithm
+  uint32 min_data_size = 7;
+  
+  // Maximum data size for adaptive algorithm
+  uint32 max_data_size = 8;
+}
