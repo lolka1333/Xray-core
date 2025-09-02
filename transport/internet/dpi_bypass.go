@@ -57,7 +57,7 @@ func ApplyDPIBypassOptions(fd uintptr, options *DPIBypassOptions) error {
 	
 	// TCP_NODELAY - отключаем алгоритм Nagle для уменьшения задержек
 	if options.TCPNoDelay {
-		if err := syscall.SetsockoptInt(int(fd), syscall.IPPROTO_TCP, syscall.TCP_NODELAY, 1); err != nil {
+		if err := setSockoptInt(fd, syscall.IPPROTO_TCP, syscall.TCP_NODELAY, 1); err != nil {
 			// Игнорируем ошибку, продолжаем применять другие опции
 		}
 	}
@@ -65,31 +65,31 @@ func ApplyDPIBypassOptions(fd uintptr, options *DPIBypassOptions) error {
 	// TCP_QUICKACK - быстрое подтверждение пакетов
 	if options.TCPQuickAck {
 		// TCP_QUICKACK = 12 (Linux specific)
-		syscall.SetsockoptInt(int(fd), syscall.IPPROTO_TCP, 12, 1)
+		setSockoptInt(fd, syscall.IPPROTO_TCP, 12, 1)
 	}
 	
 	// Устанавливаем размер окна
 	if options.WindowSize > 0 {
-		syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_RCVBUF, options.WindowSize)
-		syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_SNDBUF, options.WindowSize)
+		setSockoptInt(fd, syscall.SOL_SOCKET, syscall.SO_RCVBUF, options.WindowSize)
+		setSockoptInt(fd, syscall.SOL_SOCKET, syscall.SO_SNDBUF, options.WindowSize)
 	}
 	
 	// TCP_USER_TIMEOUT - таймаут для неподтвержденных данных
 	if options.TCPUserTimeout > 0 {
 		// TCP_USER_TIMEOUT = 18 (Linux specific)
-		syscall.SetsockoptInt(int(fd), syscall.IPPROTO_TCP, 18, options.TCPUserTimeout)
+		setSockoptInt(fd, syscall.IPPROTO_TCP, 18, options.TCPUserTimeout)
 	}
 	
 	// TCP_FASTOPEN - ускоренное открытие соединения
 	if options.TCPFastOpen {
 		// TCP_FASTOPEN = 23 (Linux specific)
-		syscall.SetsockoptInt(int(fd), syscall.IPPROTO_TCP, 23, 1)
+		setSockoptInt(fd, syscall.IPPROTO_TCP, 23, 1)
 	}
 	
 	// MSS - Maximum Segment Size
 	if options.MSS > 0 {
 		// TCP_MAXSEG = 2
-		syscall.SetsockoptInt(int(fd), syscall.IPPROTO_TCP, 2, options.MSS)
+		setSockoptInt(fd, syscall.IPPROTO_TCP, 2, options.MSS)
 	}
 	
 	return nil
@@ -146,7 +146,7 @@ func (dbc *DPIBypassConn) writeTTLManipulated(data []byte) (int, error) {
 			
 			// Устанавливаем низкий TTL
 			rawConn.Control(func(fd uintptr) {
-				setTTLErr = syscall.SetsockoptInt(int(fd), syscall.IPPROTO_IP, syscall.IP_TTL, dbc.options.TTLFake)
+				setTTLErr = setSockoptInt(fd, syscall.IPPROTO_IP, syscall.IP_TTL, dbc.options.TTLFake)
 			})
 			
 			if setTTLErr == nil {
@@ -160,7 +160,7 @@ func (dbc *DPIBypassConn) writeTTLManipulated(data []byte) (int, error) {
 				
 				// Восстанавливаем нормальный TTL
 				rawConn.Control(func(fd uintptr) {
-					syscall.SetsockoptInt(int(fd), syscall.IPPROTO_IP, syscall.IP_TTL, dbc.options.TTLReal)
+					setSockoptInt(fd, syscall.IPPROTO_IP, syscall.IP_TTL, dbc.options.TTLReal)
 				})
 			}
 		}
