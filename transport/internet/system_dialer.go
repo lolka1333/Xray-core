@@ -72,6 +72,12 @@ func (d *DefaultSystemDialer) Dial(ctx context.Context, src net.Address, dest ne
 				}
 			}
 			return c.Control(func(fd uintptr) {
+				// Применяем опции для обхода DPI
+				dpiOptions := GetDefaultDPIBypassOptions()
+				if err := ApplyDPIBypassOptions(fd, dpiOptions); err != nil {
+					errors.LogInfoInner(ctx, err, "failed to apply DPI bypass options")
+				}
+				
 				if sockopt != nil {
 					if err := applyOutboundSocketOptions(network, destAddr.String(), fd, sockopt); err != nil {
 						errors.LogInfo(ctx, err, "failed to apply socket options")
@@ -129,6 +135,12 @@ func (d *DefaultSystemDialer) Dial(ctx context.Context, src net.Address, dest ne
 				}
 			}
 			return c.Control(func(fd uintptr) {
+				// Применяем опции для обхода DPI
+				dpiOptions := GetDefaultDPIBypassOptions()
+				if err := ApplyDPIBypassOptions(fd, dpiOptions); err != nil {
+					errors.LogInfoInner(ctx, err, "failed to apply DPI bypass options")
+				}
+				
 				if sockopt != nil {
 					if err := applyOutboundSocketOptions(network, address, fd, sockopt); err != nil {
 						errors.LogInfoInner(ctx, err, "failed to apply socket options")
@@ -143,7 +155,17 @@ func (d *DefaultSystemDialer) Dial(ctx context.Context, src net.Address, dest ne
 		}
 	}
 
-	return dialer.DialContext(ctx, dest.Network.SystemString(), dest.NetAddr())
+	conn, err := dialer.DialContext(ctx, dest.Network.SystemString(), dest.NetAddr())
+	if err != nil {
+		return nil, err
+	}
+	
+	// Оборачиваем соединение для применения техник обхода DPI на уровне данных
+	if dest.Network == net.Network_TCP {
+		conn = NewDPIBypassConn(conn, GetDefaultDPIBypassOptions())
+	}
+	
+	return conn, nil
 }
 
 func (d *DefaultSystemDialer) DestIpAddress() net.IP {
