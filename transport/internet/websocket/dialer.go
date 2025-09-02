@@ -44,12 +44,26 @@ func init() {
 	common.Must(internet.RegisterTransportDialer(protocolName, Dial))
 }
 
+// shouldApplyHTTPObfuscation определяет, нужно ли применять HTTP обфускацию
+func shouldApplyHTTPObfuscation() bool {
+	// Включаем HTTP обфускацию по умолчанию для обхода DPI
+	return true
+}
+
 func dialWebSocket(ctx context.Context, dest net.Destination, streamSettings *internet.MemoryStreamConfig, ed []byte) (net.Conn, error) {
 	wsSettings := streamSettings.ProtocolSettings.(*Config)
 
 	dialer := &websocket.Dialer{
 		NetDial: func(network, addr string) (net.Conn, error) {
-			return internet.DialSystem(ctx, dest, streamSettings.SocketSettings)
+			conn, err := internet.DialSystem(ctx, dest, streamSettings.SocketSettings)
+			if err != nil {
+				return nil, err
+			}
+			// Применяем HTTP обфускацию для обхода DPI
+			if shouldApplyHTTPObfuscation() {
+				conn = internet.NewHTTPObfuscatedConn(conn)
+			}
+			return conn, nil
 		},
 		ReadBufferSize:   4 * 1024,
 		WriteBufferSize:  4 * 1024,

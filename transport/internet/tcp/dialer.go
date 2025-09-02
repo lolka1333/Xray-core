@@ -5,6 +5,7 @@ import (
 	gotls "crypto/tls"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/xtls/xray-core/common"
 	"github.com/xtls/xray-core/common/errors"
@@ -66,6 +67,10 @@ func Dial(ctx context.Context, dest net.Destination, streamSettings *internet.Me
 		}
 		if fingerprint := tls.GetFingerprint(config.Fingerprint); fingerprint != nil {
 			conn = tls.UClient(conn, tlsConfig, fingerprint)
+			// Применяем обфускацию TLS для обхода DPI
+			if shouldObfuscateTLS() {
+				conn = applyTLSObfuscation(conn)
+			}
 			if len(tlsConfig.NextProtos) == 1 && tlsConfig.NextProtos[0] == "http/1.1" { // allow manually specify
 				err = conn.(*tls.UConn).WebsocketHandshakeContext(ctx)
 			} else {
@@ -73,6 +78,10 @@ func Dial(ctx context.Context, dest net.Destination, streamSettings *internet.Me
 			}
 		} else {
 			conn = tls.Client(conn, tlsConfig)
+			// Применяем обфускацию TLS для обхода DPI
+			if shouldObfuscateTLS() {
+				conn = applyTLSObfuscation(conn)
+			}
 			err = conn.(*tls.Conn).HandshakeContext(ctx)
 		}
 		if err != nil {
@@ -104,7 +113,121 @@ func Dial(ctx context.Context, dest net.Destination, streamSettings *internet.Me
 		}
 		conn = auth.Client(conn)
 	}
+	
+	// Применяем фрагментацию для обхода DPI
+	if shouldApplyFragmentation() {
+		conn = NewFragmentConn(conn, getFragmentSize())
+	}
+	
 	return stat.Connection(conn), nil
+}
+
+// shouldApplyFragmentation определяет, нужно ли применять фрагментацию
+func shouldApplyFragmentation() bool {
+	// Включаем фрагментацию по умолчанию для обхода DPI
+	return true
+}
+
+// getFragmentSize возвращает размер фрагмента
+func getFragmentSize() int {
+	// Используем небольшие фрагменты для лучшего обхода DPI
+	// Типичный размер для обхода российских DPI
+	return 40
+}
+
+// shouldObfuscateTLS определяет, нужно ли применять TLS обфускацию
+func shouldObfuscateTLS() bool {
+	// Включаем TLS обфускацию по умолчанию для обхода DPI
+	return true
+}
+
+// applyTLSObfuscation применяет обфускацию к TLS соединению
+func applyTLSObfuscation(conn net.Conn) net.Conn {
+	// Оборачиваем соединение для обфускации TLS handshake
+	// Это включает фрагментацию ClientHello и маскировку SNI
+	return &TLSObfuscatedConn{
+		Conn:             conn,
+		fragmentSize:     40,
+		splitClientHello: true,
+		maskSNI:          true,
+	}
+}
+
+// TLSObfuscatedConn обертка для TLS соединения с обфускацией
+type TLSObfuscatedConn struct {
+	net.Conn
+	fragmentSize     int
+	splitClientHello bool
+	maskSNI          bool
+	firstWrite       bool
+}
+
+// Write перехватывает и обфусцирует TLS handshake
+func (toc *TLSObfuscatedConn) Write(b []byte) (int, error) {
+	// Проверяем, является ли это TLS ClientHello
+	if !toc.firstWrite && len(b) > 5 && b[0] == 0x16 && b[5] == 0x01 {
+		toc.firstWrite = true
+		
+		// Фрагментируем ClientHello для обхода DPI
+		if toc.splitClientHello {
+			return toc.writeFragmentedClientHello(b)
+		}
+	}
+	
+	// Обычная отправка для остальных данных
+	return toc.Conn.Write(b)
+}
+
+// writeFragmentedClientHello фрагментирует и отправляет ClientHello
+func (toc *TLSObfuscatedConn) writeFragmentedClientHello(data []byte) (int, error) {
+	// Стратегия фрагментации для обхода российских DPI:
+	// 1. Отправляем TLS заголовок отдельно (5 байт)
+	// 2. Разбиваем SNI на части
+	// 3. Добавляем случайные задержки
+	
+	totalLen := len(data)
+	
+	// Отправляем TLS заголовок
+	if _, err := toc.Conn.Write(data[:5]); err != nil {
+		return 0, err
+	}
+	
+	// Небольшая задержка
+	time.Sleep(time.Microsecond * time.Duration(randInt(100, 500)))
+	
+	// Отправляем остальное маленькими фрагментами
+	sent := 5
+	for sent < totalLen {
+		chunkSize := toc.fragmentSize
+		if sent+chunkSize > totalLen {
+			chunkSize = totalLen - sent
+		}
+		
+		// Для области SNI используем еще меньшие фрагменты
+		if sent > 40 && sent < 100 {
+			chunkSize = min(chunkSize, 5+int(randInt(0, 10)))
+		}
+		
+		if _, err := toc.Conn.Write(data[sent : sent+chunkSize]); err != nil {
+			return sent, err
+		}
+		
+		sent += chunkSize
+		
+		// Случайная микро-задержка между фрагментами
+		if sent < totalLen {
+			time.Sleep(time.Microsecond * time.Duration(randInt(50, 200)))
+		}
+	}
+	
+	return totalLen, nil
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func init() {
