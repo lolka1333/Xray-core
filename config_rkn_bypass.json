@@ -1,0 +1,313 @@
+{
+  "log": {
+    "loglevel": "warning"
+  },
+  "inbounds": [
+    {
+      "port": 1080,
+      "listen": "127.0.0.1",
+      "protocol": "socks",
+      "settings": {
+        "auth": "noauth",
+        "udp": true,
+        "ip": "127.0.0.1"
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": ["http", "tls"]
+      }
+    },
+    {
+      "port": 8080,
+      "listen": "127.0.0.1",
+      "protocol": "http",
+      "settings": {
+        "allowTransparent": false
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": ["http", "tls"]
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "your-server.com",
+            "port": 443,
+            "users": [
+              {
+                "id": "your-uuid-here",
+                "encryption": "none",
+                "flow": "xtls-rprx-vision"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "realitySettings": {
+          "show": false,
+          "dest": "www.microsoft.com:443",
+          "xver": 0,
+          "serverNames": [
+            "www.microsoft.com",
+            "www.apple.com",
+            "www.google.com",
+            "www.amazon.com",
+            "www.cloudflare.com"
+          ],
+          "privateKey": "your-private-key-here",
+          "shortId": "your-short-id",
+          "spiderX": "/",
+          "fingerprint": "chrome"
+        },
+        "sockopt": {
+          "mark": 255,
+          "tcpFastOpen": true,
+          "tproxy": "off",
+          "domainStrategy": "UseIP",
+          "dialerProxy": "",
+          "acceptProxyProtocol": false,
+          "tcpKeepAliveInterval": 30,
+          "tcpKeepAliveIdle": 60,
+          "tcpUserTimeout": 10000,
+          "tcpNoDelay": true,
+          "tcpMptcp": false,
+          "tcpMaxSeg": 1360
+        }
+      },
+      "tag": "proxy-reality"
+    },
+    {
+      "protocol": "freedom",
+      "settings": {
+        "domainStrategy": "UseIP",
+        "fragment": {
+          "packets_from": 1,
+          "packets_to": 3,
+          "length_min": 10,
+          "length_max": 100,
+          "interval_min": 10,
+          "interval_max": 30,
+          "max_split_min": 3,
+          "max_split_max": 5
+        },
+        "noises": [
+          {
+            "apply_to": "ipv4",
+            "length_min": 10,
+            "length_max": 50,
+            "delay_min": 5,
+            "delay_max": 15
+          }
+        ]
+      },
+      "tag": "direct-fragment"
+    },
+    {
+      "protocol": "freedom",
+      "settings": {
+        "domainStrategy": "UseIP"
+      },
+      "tag": "direct"
+    },
+    {
+      "protocol": "blackhole",
+      "settings": {
+        "response": {
+          "type": "http"
+        }
+      },
+      "tag": "block"
+    }
+  ],
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      {
+        "type": "field",
+        "ip": ["geoip:private"],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "domain": [
+          "geosite:category-ads-all",
+          "geosite:category-porn"
+        ],
+        "outboundTag": "block"
+      },
+      {
+        "type": "field",
+        "domain": [
+          "domain:youtube.com",
+          "domain:youtu.be",
+          "domain:ytimg.com",
+          "domain:googlevideo.com",
+          "domain:googleapis.com",
+          "domain:twitter.com",
+          "domain:x.com",
+          "domain:twimg.com",
+          "domain:t.co",
+          "domain:facebook.com",
+          "domain:fbcdn.net",
+          "domain:instagram.com",
+          "domain:cdninstagram.com",
+          "domain:telegram.org",
+          "domain:t.me",
+          "domain:tdesktop.com",
+          "domain:telesco.pe",
+          "domain:linkedin.com",
+          "domain:licdn.com",
+          "domain:medium.com",
+          "domain:discord.com",
+          "domain:discord.gg",
+          "domain:discordapp.com",
+          "domain:openai.com",
+          "domain:chatgpt.com",
+          "domain:anthropic.com",
+          "domain:claude.ai",
+          "domain:bbc.com",
+          "domain:bbc.co.uk",
+          "domain:dw.com",
+          "domain:meduza.io",
+          "domain:svoboda.org",
+          "domain:currenttime.tv",
+          "domain:bbci.co.uk",
+          "domain:netflix.com",
+          "domain:nflxvideo.net",
+          "domain:spotify.com",
+          "domain:scdn.co",
+          "domain:wikipedia.org",
+          "domain:wikimedia.org",
+          "domain:github.com",
+          "domain:githubusercontent.com",
+          "domain:gitlab.com",
+          "domain:stackoverflow.com",
+          "domain:reddit.com",
+          "domain:redd.it",
+          "domain:redditstatic.com",
+          "domain:quora.com",
+          "domain:tiktok.com",
+          "domain:tiktokcdn.com",
+          "domain:musical.ly",
+          "domain:soundcloud.com",
+          "domain:sndcdn.com"
+        ],
+        "outboundTag": "proxy-reality"
+      },
+      {
+        "type": "field",
+        "domain": [
+          "geosite:ru",
+          "domain:yandex.ru",
+          "domain:yandex.net",
+          "domain:yastatic.net",
+          "domain:mail.ru",
+          "domain:mradx.net",
+          "domain:imgsmail.ru",
+          "domain:vk.com",
+          "domain:vkuservideo.net",
+          "domain:vkuseraudio.net",
+          "domain:userapi.com",
+          "domain:ok.ru",
+          "domain:odnoklassniki.ru",
+          "domain:avito.ru",
+          "domain:avito.st",
+          "domain:drom.ru",
+          "domain:auto.ru",
+          "domain:youla.ru",
+          "domain:cian.ru",
+          "domain:wildberries.ru",
+          "domain:wbstatic.net",
+          "domain:ozon.ru",
+          "domain:ozonusercontent.com",
+          "domain:aliexpress.ru",
+          "domain:aliexpress.com",
+          "domain:sberbank.ru",
+          "domain:tinkoff.ru",
+          "domain:vtb.ru",
+          "domain:alfabank.ru",
+          "domain:raiffeisen.ru",
+          "domain:gosuslugi.ru",
+          "domain:mos.ru",
+          "domain:nalog.ru",
+          "domain:pfr.gov.ru",
+          "domain:cbr.ru"
+        ],
+        "outboundTag": "direct-fragment"
+      },
+      {
+        "type": "field",
+        "ip": ["geoip:ru"],
+        "outboundTag": "direct-fragment"
+      },
+      {
+        "type": "field",
+        "network": "tcp,udp",
+        "outboundTag": "proxy-reality"
+      }
+    ]
+  },
+  "dns": {
+    "servers": [
+      {
+        "address": "https://1.1.1.1/dns-query",
+        "domains": ["geosite:geolocation-!cn"],
+        "expectIPs": ["geoip:!cn"]
+      },
+      {
+        "address": "https://dns.google/dns-query",
+        "domains": ["geosite:google"],
+        "expectIPs": ["geoip:google"]
+      },
+      {
+        "address": "8.8.8.8",
+        "domains": ["geosite:netflix"],
+        "expectIPs": ["geoip:netflix"]
+      },
+      {
+        "address": "77.88.8.8",
+        "domains": ["geosite:ru", "domain:ru"],
+        "expectIPs": ["geoip:ru"]
+      },
+      "8.8.4.4",
+      "1.0.0.1"
+    ],
+    "queryStrategy": "UseIPv4",
+    "disableCache": false,
+    "disableFallback": false,
+    "disableFallbackIfMatch": false,
+    "tag": "dns_inbound"
+  },
+  "policy": {
+    "levels": {
+      "0": {
+        "handshake": 4,
+        "connIdle": 300,
+        "uplinkOnly": 2,
+        "downlinkOnly": 5,
+        "statsUserUplink": false,
+        "statsUserDownlink": false,
+        "bufferSize": 10240
+      }
+    },
+    "system": {
+      "statsInboundUplink": false,
+      "statsInboundDownlink": false,
+      "statsOutboundUplink": false,
+      "statsOutboundDownlink": false
+    }
+  },
+  "stats": {},
+  "api": {
+    "tag": "api",
+    "services": ["HandlerService", "LoggerService", "StatsService"]
+  }
+}

@@ -181,10 +181,8 @@ func (h *Handler) Process(ctx context.Context, link *transport.Link, dialer inte
 			if h.config.Fragment != nil {
 				errors.LogDebug(ctx, "FRAGMENT", h.config.Fragment.PacketsFrom, h.config.Fragment.PacketsTo, h.config.Fragment.LengthMin, h.config.Fragment.LengthMax,
 					h.config.Fragment.IntervalMin, h.config.Fragment.IntervalMax, h.config.Fragment.MaxSplitMin, h.config.Fragment.MaxSplitMax)
-				writer = buf.NewWriter(&FragmentWriter{
-					fragment: h.config.Fragment,
-					writer:   conn,
-				})
+				// Use enhanced DPI bypass writer for better censorship circumvention
+				writer = buf.NewWriter(NewDPIBypassWriter(conn, h.config.Fragment))
 			} else {
 				writer = buf.NewWriter(conn)
 			}
