@@ -4,6 +4,7 @@ name: Scheduled assets update
 #       routine manner, for example: GeoIP/GeoSite.
 #       Currently updating:
 #       - Geodat (GeoIP/Geosite)
+# Last updated: 2025-01-02 - Re-enable workflow
 
 on:
   workflow_dispatch:
