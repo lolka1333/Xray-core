@@ -20,10 +20,44 @@ import (
 // Dial dials a new TCP connection to the given destination.
 func Dial(ctx context.Context, dest net.Destination, streamSettings *internet.MemoryStreamConfig) (stat.Connection, error) {
 	errors.LogInfo(ctx, "dialing TCP to ", dest)
+	
+	// Проверяем, нужно ли использовать мультиплексирование для обхода лимитов РКН
+	if shouldUseMultiplex(ctx, dest) {
+		dialer := func() (net.Conn, error) {
+			return internet.DialSystem(ctx, dest, streamSettings.SocketSettings)
+		}
+		
+		config := GetDefaultMultiplexConfig()
+		// Для российских провайдеров используем более агрессивные настройки
+		config.DataLimitPerConnection = 14 * 1024 // 14KB для безопасности
+		config.MaxConnections = 16
+		config.RotateOnLimit = true
+		
+		conn, err := NewMultiplexedConn(ctx, dialer, config)
+		if err != nil {
+			// Fallback к обычному соединению
+			errors.LogWarning(ctx, "Failed to create multiplexed connection, falling back to normal: ", err)
+			conn, err := internet.DialSystem(ctx, dest, streamSettings.SocketSettings)
+			if err != nil {
+				return nil, err
+			}
+			return applyDPIBypassMethods(ctx, conn, dest, streamSettings)
+		}
+		
+		// Применяем остальные методы обхода поверх мультиплексирования
+		return applyDPIBypassMethods(ctx, conn, dest, streamSettings)
+	}
+	
 	conn, err := internet.DialSystem(ctx, dest, streamSettings.SocketSettings)
 	if err != nil {
 		return nil, err
 	}
+	
+	return applyDPIBypassMethods(ctx, conn, dest, streamSettings)
+}
+
+// applyDPIBypassMethods применяет все методы обхода DPI
+func applyDPIBypassMethods(ctx context.Context, conn net.Conn, dest net.Destination, streamSettings *internet.MemoryStreamConfig) (stat.Connection, error) {
 
 	if config := tls.ConfigFromStreamSettings(streamSettings); config != nil {
 		mitmServerName := session.MitmServerNameFromContext(ctx)
@@ -33,6 +67,14 @@ func Dial(ctx context.Context, dest net.Destination, streamSettings *internet.Me
 			tlsConfig = config.GetTLSConfig(tls.WithOverrideName(mitmServerName))
 		} else {
 			tlsConfig = config.GetTLSConfig(tls.WithDestination(dest))
+			
+			// Применяем whitelist SNI для обхода блокировок
+			if internet.ShouldMaskSNI(tlsConfig.ServerName) {
+				originalSNI := tlsConfig.ServerName
+				maskedSNI := internet.GetWhitelistSNIForDomain(originalSNI)
+				tlsConfig.ServerName = maskedSNI
+				errors.LogInfo(ctx, "Masking SNI: ", originalSNI, " -> ", maskedSNI)
+			}
 		}
 
 		isFromMitmVerify := false
@@ -65,6 +107,7 @@ func Dial(ctx context.Context, dest net.Destination, streamSettings *internet.Me
 				tlsConfig.NextProtos = []string{"h2", "http/1.1"}
 			}
 		}
+		var err error
 		if fingerprint := tls.GetFingerprint(config.Fingerprint); fingerprint != nil {
 			conn = tls.UClient(conn, tlsConfig, fingerprint)
 			// Применяем обфускацию TLS для обхода DPI
@@ -96,6 +139,7 @@ func Dial(ctx context.Context, dest net.Destination, streamSettings *internet.Me
 			return nil, errors.New("MITM freedom RAW TLS: unexpected Negotiated Protocol (" + negotiatedProtocol + ") with " + mitmServerName).AtWarning()
 		}
 	} else if config := reality.ConfigFromStreamSettings(streamSettings); config != nil {
+		var err error
 		if conn, err = reality.UClient(conn, config, ctx, dest); err != nil {
 			return nil, err
 		}
@@ -120,6 +164,23 @@ func Dial(ctx context.Context, dest net.Destination, streamSettings *internet.Me
 	}
 	
 	return stat.Connection(conn), nil
+}
+
+// shouldUseMultiplex определяет, нужно ли использовать мультиплексирование
+func shouldUseMultiplex(ctx context.Context, dest net.Destination) bool {
+	// Включаем мультиплексирование для обхода лимитов РКН
+	// Особенно важно для HTTPS/TLS трафика на подозрительные IP
+	
+	// Проверяем, что это не локальный адрес
+	if dest.Address.Family().IsIP() {
+		ip := dest.Address.IP()
+		if ip.IsLoopback() || ip.IsPrivate() {
+			return false
+		}
+	}
+	
+	// Включаем для всех внешних соединений
+	return true
 }
 
 // shouldApplyFragmentation определяет, нужно ли применять фрагментацию
