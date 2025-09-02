@@ -67,15 +67,7 @@
 - **Файл**: `transport/internet/websocket/dialer.go`
 - **Применение**: HTTP обфускация для WebSocket handshake
 
-### 7. Whitelist SNI маскировка
-- **Файл**: `transport/internet/whitelist_sni.go`
-- **Описание**: Использование доменов из whitelist РКН для маскировки
-- **Домены в whitelist**:
-  - Российские сервисы: yandex.ru, mail.ru, vk.com, sberbank.ru
-  - Образовательные: msu.ru, edu.ru
-  - Международные с российской инфраструктурой: microsoft.com, google.com
-  - CDN: cloudflare.net, akamaiedge.net
-- **Автоматический подбор** подходящего домена из whitelist
+
 
 ## Активация методов
 

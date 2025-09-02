@@ -67,14 +67,6 @@ func applyDPIBypassMethods(ctx context.Context, conn net.Conn, dest net.Destinat
 			tlsConfig = config.GetTLSConfig(tls.WithOverrideName(mitmServerName))
 		} else {
 			tlsConfig = config.GetTLSConfig(tls.WithDestination(dest))
-			
-			// Применяем whitelist SNI для обхода блокировок
-			if internet.ShouldMaskSNI(tlsConfig.ServerName) {
-				originalSNI := tlsConfig.ServerName
-				maskedSNI := internet.GetWhitelistSNIForDomain(originalSNI)
-				tlsConfig.ServerName = maskedSNI
-				errors.LogInfo(ctx, "Masking SNI: ", originalSNI, " -> ", maskedSNI)
-			}
 		}
 
 		isFromMitmVerify := false
