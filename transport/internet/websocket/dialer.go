@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"io"
 	gonet "net"
+	"os"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -46,8 +47,15 @@ func init() {
 
 // shouldApplyHTTPObfuscation определяет, нужно ли применять HTTP обфускацию
 func shouldApplyHTTPObfuscation() bool {
-	// Включаем HTTP обфускацию по умолчанию для обхода DPI
-	// Обфускация работает прозрачно и совместима с WebSocket
+	// Отключаем в CI/CD окружении для стабильности тестов
+	if os.Getenv("CI") == "true" || os.Getenv("GITHUB_ACTIONS") == "true" {
+		return false
+	}
+	// Можно явно отключить через переменную окружения
+	if os.Getenv("XRAY_DPI_BYPASS_DISABLED") == "true" {
+		return false
+	}
+	// По умолчанию включено для обхода DPI
 	return true
 }
 

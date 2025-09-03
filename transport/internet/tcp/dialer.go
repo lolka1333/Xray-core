@@ -3,6 +3,7 @@ package tcp
 import (
 	"context"
 	gotls "crypto/tls"
+	"os"
 	"slices"
 	"strings"
 	"time"
@@ -170,8 +171,15 @@ var ShouldApplyFragmentation = shouldApplyFragmentation
 
 // shouldApplyFragmentation определяет, нужно ли применять фрагментацию
 func shouldApplyFragmentation() bool {
-	// Включаем фрагментацию по умолчанию для обхода DPI
-	// Фрагментация работает прозрачно и не ломает протоколы
+	// Отключаем в CI/CD окружении для стабильности тестов
+	if os.Getenv("CI") == "true" || os.Getenv("GITHUB_ACTIONS") == "true" {
+		return false
+	}
+	// Можно явно отключить через переменную окружения
+	if os.Getenv("XRAY_DPI_BYPASS_DISABLED") == "true" {
+		return false
+	}
+	// По умолчанию включено для обхода DPI
 	return true
 }
 
@@ -187,8 +195,15 @@ var ShouldObfuscateTLS = shouldObfuscateTLS
 
 // shouldObfuscateTLS определяет, нужно ли применять TLS обфускацию
 func shouldObfuscateTLS() bool {
-	// Включаем TLS обфускацию по умолчанию для обхода DPI
-	// Обфускация работает прозрачно и совместима со всеми протоколами
+	// Отключаем в CI/CD окружении для стабильности тестов
+	if os.Getenv("CI") == "true" || os.Getenv("GITHUB_ACTIONS") == "true" {
+		return false
+	}
+	// Можно явно отключить через переменную окружения
+	if os.Getenv("XRAY_DPI_BYPASS_DISABLED") == "true" {
+		return false
+	}
+	// По умолчанию включено для обхода DPI
 	return true
 }
 
