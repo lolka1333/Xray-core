@@ -72,11 +72,12 @@ func (d *DefaultSystemDialer) Dial(ctx context.Context, src net.Address, dest ne
 				}
 			}
 			return c.Control(func(fd uintptr) {
-				// Применяем опции для обхода DPI
-				dpiOptions := GetDefaultDPIBypassOptions()
-				if err := ApplyDPIBypassOptions(fd, dpiOptions); err != nil {
-					errors.LogInfoInner(ctx, err, "failed to apply DPI bypass options")
-				}
+				// DPI bypass options disabled by default to avoid breaking WebSocket and other protocols
+				// TODO: Make this configurable through settings
+				// dpiOptions := GetDefaultDPIBypassOptions()
+				// if err := ApplyDPIBypassOptions(fd, dpiOptions); err != nil {
+				// 	errors.LogInfoInner(ctx, err, "failed to apply DPI bypass options")
+				// }
 				
 				if sockopt != nil {
 					if err := applyOutboundSocketOptions(network, destAddr.String(), fd, sockopt); err != nil {
@@ -135,11 +136,12 @@ func (d *DefaultSystemDialer) Dial(ctx context.Context, src net.Address, dest ne
 				}
 			}
 			return c.Control(func(fd uintptr) {
-				// Применяем опции для обхода DPI
-				dpiOptions := GetDefaultDPIBypassOptions()
-				if err := ApplyDPIBypassOptions(fd, dpiOptions); err != nil {
-					errors.LogInfoInner(ctx, err, "failed to apply DPI bypass options")
-				}
+				// DPI bypass options disabled by default to avoid breaking WebSocket and other protocols
+				// TODO: Make this configurable through settings
+				// dpiOptions := GetDefaultDPIBypassOptions()
+				// if err := ApplyDPIBypassOptions(fd, dpiOptions); err != nil {
+				// 	errors.LogInfoInner(ctx, err, "failed to apply DPI bypass options")
+				// }
 				
 				if sockopt != nil {
 					if err := applyOutboundSocketOptions(network, address, fd, sockopt); err != nil {
@@ -160,10 +162,9 @@ func (d *DefaultSystemDialer) Dial(ctx context.Context, src net.Address, dest ne
 		return nil, err
 	}
 	
-	// Оборачиваем соединение для применения техник обхода DPI на уровне данных
-	if dest.Network == net.Network_TCP {
-		conn = NewDPIBypassConn(conn, GetDefaultDPIBypassOptions())
-	}
+	// DPIBypassConn wrapper is applied at higher levels (e.g., TCP dialer) where we have
+	// more context about the protocol being used. Applying it here breaks WebSocket and
+	// other protocols that are sensitive to data fragmentation and timing.
 	
 	return conn, nil
 }
