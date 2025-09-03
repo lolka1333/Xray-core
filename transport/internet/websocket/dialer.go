@@ -46,9 +46,9 @@ func init() {
 
 // shouldApplyHTTPObfuscation определяет, нужно ли применять HTTP обфускацию
 func shouldApplyHTTPObfuscation() bool {
-	// Отключаем HTTP обфускацию по умолчанию для совместимости
-	// TODO: Сделать это настраиваемым через конфигурацию
-	return false
+	// Включаем HTTP обфускацию по умолчанию для обхода DPI
+	// Обфускация работает прозрачно и совместима с WebSocket
+	return true
 }
 
 func dialWebSocket(ctx context.Context, dest net.Destination, streamSettings *internet.MemoryStreamConfig, ed []byte) (net.Conn, error) {

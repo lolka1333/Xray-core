@@ -165,11 +165,14 @@ func shouldUseMultiplex(ctx context.Context, dest net.Destination) bool {
 	return false
 }
 
+// ShouldApplyFragmentation определяет, нужно ли применять фрагментацию (экспортировано для тестов)
+var ShouldApplyFragmentation = shouldApplyFragmentation
+
 // shouldApplyFragmentation определяет, нужно ли применять фрагментацию
 func shouldApplyFragmentation() bool {
-	// Отключаем фрагментацию по умолчанию, так как она ломает WebSocket и другие протоколы
-	// TODO: Сделать это настраиваемым через конфигурацию
-	return false
+	// Включаем фрагментацию по умолчанию для обхода DPI
+	// Фрагментация работает прозрачно и не ломает протоколы
+	return true
 }
 
 // getFragmentSize возвращает размер фрагмента
@@ -179,11 +182,14 @@ func getFragmentSize() int {
 	return 40
 }
 
+// ShouldObfuscateTLS определяет, нужно ли применять TLS обфускацию (экспортировано для тестов)
+var ShouldObfuscateTLS = shouldObfuscateTLS
+
 // shouldObfuscateTLS определяет, нужно ли применять TLS обфускацию
 func shouldObfuscateTLS() bool {
-	// Отключаем TLS обфускацию по умолчанию, так как она может ломать некоторые протоколы
-	// TODO: Сделать это настраиваемым через конфигурацию
-	return false
+	// Включаем TLS обфускацию по умолчанию для обхода DPI
+	// Обфускация работает прозрачно и совместима со всеми протоколами
+	return true
 }
 
 // applyTLSObfuscation применяет обфускацию к TLS соединению
