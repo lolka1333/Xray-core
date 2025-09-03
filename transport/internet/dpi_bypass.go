@@ -32,22 +32,7 @@ type DPIBypassOptions struct {
 }
 
 // GetDefaultDPIBypassOptions возвращает оптимальные настройки для обхода российских DPI
-func GetDefaultDPIBypassOptions() *DPIBypassOptions {
-	return &DPIBypassOptions{
-		TCPNoDelay:     true,
-		TCPQuickAck:    true,
-		TCPKeepAlive:   true,
-		TCPUserTimeout: 30000, // 30 секунд
-		FragmentSize:   40,
-		FragmentDelay:  100,
-		TTLFake:        3,  // Низкий TTL для первых пакетов (не дойдут до сервера)
-		TTLReal:        64, // Нормальный TTL
-		TCPFastOpen:    true,
-		TCPSyncookie:   false,
-		WindowSize:     65535,
-		MSS:            1360, // Меньше стандартного для лучшей фрагментации
-	}
-}
+// Реализация зависит от платформы (см. dpi_bypass_windows.go и dpi_bypass_unix.go)
 
 // ApplyDPIBypassOptions применяет опции обхода DPI к сокету
 func ApplyDPIBypassOptions(fd uintptr, options *DPIBypassOptions) error {

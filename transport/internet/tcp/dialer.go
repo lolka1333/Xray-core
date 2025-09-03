@@ -160,25 +160,16 @@ func applyDPIBypassMethods(ctx context.Context, conn net.Conn, dest net.Destinat
 
 // shouldUseMultiplex определяет, нужно ли использовать мультиплексирование
 func shouldUseMultiplex(ctx context.Context, dest net.Destination) bool {
-	// Включаем мультиплексирование для обхода лимитов РКН
-	// Особенно важно для HTTPS/TLS трафика на подозрительные IP
-	
-	// Проверяем, что это не локальный адрес
-	if dest.Address.Family().IsIP() {
-		ip := dest.Address.IP()
-		if ip.IsLoopback() || ip.IsPrivate() {
-			return false
-		}
-	}
-	
-	// Включаем для всех внешних соединений
-	return true
+	// Отключаем мультиплексирование по умолчанию для совместимости
+	// TODO: Сделать это настраиваемым через конфигурацию
+	return false
 }
 
 // shouldApplyFragmentation определяет, нужно ли применять фрагментацию
 func shouldApplyFragmentation() bool {
-	// Включаем фрагментацию по умолчанию для обхода DPI
-	return true
+	// Отключаем фрагментацию по умолчанию, так как она ломает WebSocket и другие протоколы
+	// TODO: Сделать это настраиваемым через конфигурацию
+	return false
 }
 
 // getFragmentSize возвращает размер фрагмента
@@ -190,8 +181,9 @@ func getFragmentSize() int {
 
 // shouldObfuscateTLS определяет, нужно ли применять TLS обфускацию
 func shouldObfuscateTLS() bool {
-	// Включаем TLS обфускацию по умолчанию для обхода DPI
-	return true
+	// Отключаем TLS обфускацию по умолчанию, так как она может ломать некоторые протоколы
+	// TODO: Сделать это настраиваемым через конфигурацию
+	return false
 }
 
 // applyTLSObfuscation применяет обфускацию к TLS соединению
