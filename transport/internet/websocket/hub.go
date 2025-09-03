@@ -156,7 +156,12 @@ func (ln *Listener) Addr() net.Addr {
 
 // Close implements net.Listener.Close().
 func (ln *Listener) Close() error {
-	return ln.listener.Close()
+	// Shutdown the HTTP server gracefully before closing the listener
+	// This prevents "use of closed network connection" errors
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	// Shutdown closes the listener, so we don't need to close it again
+	return ln.server.Shutdown(ctx)
 }
 
 func init() {

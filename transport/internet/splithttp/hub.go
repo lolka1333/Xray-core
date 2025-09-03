@@ -462,6 +462,16 @@ func (ln *Listener) Close() error {
 			return err
 		}
 	} else if ln.listener != nil {
+		// Shutdown the HTTP server gracefully if it exists
+		// This prevents "use of closed network connection" errors
+		if ln.server.Handler != nil {
+			// Use a short timeout for shutdown to avoid hanging
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			// Shutdown closes the listener, so we don't need to close it again
+			return ln.server.Shutdown(ctx)
+		}
+		// If no HTTP server, just close the listener
 		return ln.listener.Close()
 	}
 	return errors.New("listener does not have an HTTP/3 server or a net.listener")
