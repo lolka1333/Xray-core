@@ -427,7 +427,10 @@ func Dial(ctx context.Context, dest net.Destination, streamSettings *internet.Me
 					data.MultiBuffer = chunk
 					contentLength := int64(chunk.Len())
 					// Upload the chunk using the HTTP client
-					httpClient.PostPacket(ctx, requestURL.String(), &data, contentLength)
+					err = httpClient.PostPacket(ctx, requestURL.String(), &data, contentLength)
+					if err != nil {
+						errors.LogWarning(ctx, "failed to post packet in fragment writer: ", err)
+					}
 					buf.ReleaseMulti(chunk)
 				}
 			}()

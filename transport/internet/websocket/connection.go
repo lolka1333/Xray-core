@@ -180,12 +180,32 @@ func (c *connection) WriteMultiBuffer(mb buf.MultiBuffer) error {
 
 func (c *connection) Close() error {
 	var errs []interface{}
-	if err := c.conn.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""), time.Now().Add(time.Second*5)); err != nil {
-		errs = append(errs, err)
+	
+	// Close all connections in the pool if fragmentation is enabled
+	if c.fragmentConfig != nil && c.fragmentConfig.Enabled {
+		c.poolMu.Lock()
+		for _, conn := range c.connectionPool {
+			if conn != nil {
+				if err := conn.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""), time.Now().Add(time.Second*5)); err != nil {
+					errs = append(errs, err)
+				}
+				if err := conn.Close(); err != nil {
+					errs = append(errs, err)
+				}
+			}
+		}
+		c.connectionPool = nil
+		c.poolMu.Unlock()
+	} else {
+		// Normal close for non-fragmented connections
+		if err := c.conn.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""), time.Now().Add(time.Second*5)); err != nil {
+			errs = append(errs, err)
+		}
+		if err := c.conn.Close(); err != nil {
+			errs = append(errs, err)
+		}
 	}
-	if err := c.conn.Close(); err != nil {
-		errs = append(errs, err)
-	}
+	
 	if len(errs) > 0 {
 		return errors.New("failed to close connection").Base(errors.New(serial.Concat(errs...)))
 	}
