@@ -4,17 +4,27 @@ import (
 	"io"
 	"net"
 	"time"
+	
+	"github.com/xtls/xray-core/transport/internet/fragmenter"
 )
 
 type splitConn struct {
-	writer     io.WriteCloser
-	reader     io.ReadCloser
-	remoteAddr net.Addr
-	localAddr  net.Addr
-	onClose    func()
+	writer         io.WriteCloser
+	reader         io.ReadCloser
+	remoteAddr     net.Addr
+	localAddr      net.Addr
+	onClose        func()
+	fragmentWriter *fragmenter.FragmentWriter
+	fragmentConfig *fragmenter.FragmentConfig
 }
 
 func (c *splitConn) Write(b []byte) (int, error) {
+	// If DPI bypass is enabled and we have a fragment writer, use it
+	if c.fragmentWriter != nil && c.fragmentConfig != nil && c.fragmentConfig.Enabled {
+		return c.fragmentWriter.Write(b)
+	}
+	
+	// Normal write without fragmentation
 	return c.writer.Write(b)
 }
 

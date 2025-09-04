@@ -36,4 +36,12 @@ message Config {
   RangeConfig scStreamUpServerSecs = 11;
   XmuxConfig xmux = 12;
   xray.transport.internet.StreamConfig downloadSettings = 13;
+  
+  // DPI bypass configuration
+  bool dpiBypassEnabled = 14;           // Enable DPI bypass fragmentation
+  int32 dpiFragmentSize = 15;           // Fragment size in bytes (default: 15360 = 15KB)
+  int32 dpiFragmentDelay = 16;          // Delay between fragments in milliseconds
+  bool dpiRandomSize = 17;              // Use random fragment sizes
+  int32 dpiMinSize = 18;                // Minimum random size (default: 10KB)
+  int32 dpiMaxSize = 19;                // Maximum random size (default: 20KB)
 }

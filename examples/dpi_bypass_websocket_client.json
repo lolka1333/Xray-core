@@ -1,0 +1,53 @@
+{
+  "log": {
+    "loglevel": "info"
+  },
+  "inbounds": [
+    {
+      "port": 1080,
+      "listen": "127.0.0.1",
+      "protocol": "socks",
+      "settings": {
+        "udp": true
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "your-server.com",
+            "port": 443,
+            "users": [
+              {
+                "id": "your-uuid-here",
+                "encryption": "none"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "your-server.com"
+        },
+        "wsSettings": {
+          "path": "/websocket",
+          "headers": {
+            "Host": "your-server.com"
+          },
+          "dpiBypassEnabled": true,
+          "dpiFragmentSize": 15360,
+          "dpiFragmentDelay": 10,
+          "dpiRandomSize": true,
+          "dpiMinSize": 10240,
+          "dpiMaxSize": 20480
+        }
+      }
+    }
+  ]
+}

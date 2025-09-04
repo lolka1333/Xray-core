@@ -148,6 +148,14 @@ type WebSocketConfig struct {
 	Headers             map[string]string `json:"headers"`
 	AcceptProxyProtocol bool              `json:"acceptProxyProtocol"`
 	HeartbeatPeriod     uint32            `json:"heartbeatPeriod"`
+	
+	// DPI bypass configuration
+	DpiBypassEnabled  bool   `json:"dpiBypassEnabled"`
+	DpiFragmentSize   int32  `json:"dpiFragmentSize"`
+	DpiFragmentDelay  int32  `json:"dpiFragmentDelay"`
+	DpiRandomSize     bool   `json:"dpiRandomSize"`
+	DpiMinSize        int32  `json:"dpiMinSize"`
+	DpiMaxSize        int32  `json:"dpiMaxSize"`
 }
 
 // Build implements Buildable.
@@ -180,6 +188,12 @@ func (c *WebSocketConfig) Build() (proto.Message, error) {
 		AcceptProxyProtocol: c.AcceptProxyProtocol,
 		Ed:                  ed,
 		HeartbeatPeriod:     c.HeartbeatPeriod,
+		DpiBypassEnabled:    c.DpiBypassEnabled,
+		DpiFragmentSize:     c.DpiFragmentSize,
+		DpiFragmentDelay:    c.DpiFragmentDelay,
+		DpiRandomSize:       c.DpiRandomSize,
+		DpiMinSize:          c.DpiMinSize,
+		DpiMaxSize:          c.DpiMaxSize,
 	}
 	return config, nil
 }
@@ -235,6 +249,14 @@ type SplitHTTPConfig struct {
 	Xmux                 XmuxConfig        `json:"xmux"`
 	DownloadSettings     *StreamConfig     `json:"downloadSettings"`
 	Extra                json.RawMessage   `json:"extra"`
+	
+	// DPI bypass configuration
+	DpiBypassEnabled  bool   `json:"dpiBypassEnabled"`
+	DpiFragmentSize   int32  `json:"dpiFragmentSize"`
+	DpiFragmentDelay  int32  `json:"dpiFragmentDelay"`
+	DpiRandomSize     bool   `json:"dpiRandomSize"`
+	DpiMinSize        int32  `json:"dpiMinSize"`
+	DpiMaxSize        int32  `json:"dpiMaxSize"`
 }
 
 type XmuxConfig struct {
@@ -317,6 +339,12 @@ func (c *SplitHTTPConfig) Build() (proto.Message, error) {
 			HMaxReusableSecs: newRangeConfig(c.Xmux.HMaxReusableSecs),
 			HKeepAlivePeriod: c.Xmux.HKeepAlivePeriod,
 		},
+		DpiBypassEnabled:  c.DpiBypassEnabled,
+		DpiFragmentSize:   c.DpiFragmentSize,
+		DpiFragmentDelay:  c.DpiFragmentDelay,
+		DpiRandomSize:     c.DpiRandomSize,
+		DpiMinSize:        c.DpiMinSize,
+		DpiMaxSize:        c.DpiMaxSize,
 	}
 
 	if c.DownloadSettings != nil {

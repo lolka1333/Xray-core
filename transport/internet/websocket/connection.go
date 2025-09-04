@@ -9,6 +9,7 @@ import (
 	"github.com/xtls/xray-core/common/buf"
 	"github.com/xtls/xray-core/common/errors"
 	"github.com/xtls/xray-core/common/serial"
+	"github.com/xtls/xray-core/transport/internet/fragmenter"
 )
 
 var _ buf.Writer = (*connection)(nil)
@@ -17,12 +18,18 @@ var _ buf.Writer = (*connection)(nil)
 // remoteAddr is used to pass "virtual" remote IP addresses in X-Forwarded-For.
 // so we shouldn't directly read it form conn.
 type connection struct {
-	conn       *websocket.Conn
-	reader     io.Reader
-	remoteAddr net.Addr
+	conn           *websocket.Conn
+	reader         io.Reader
+	remoteAddr     net.Addr
+	fragmentWriter *fragmenter.FragmentWriter
+	fragmentConfig *fragmenter.FragmentConfig
 }
 
 func NewConnection(conn *websocket.Conn, remoteAddr net.Addr, extraReader io.Reader, heartbeatPeriod uint32) *connection {
+	return NewConnectionWithDPI(conn, remoteAddr, extraReader, heartbeatPeriod, nil)
+}
+
+func NewConnectionWithDPI(conn *websocket.Conn, remoteAddr net.Addr, extraReader io.Reader, heartbeatPeriod uint32, dpiConfig *fragmenter.FragmentConfig) *connection {
 	if heartbeatPeriod != 0 {
 		go func() {
 			for {
@@ -34,11 +41,19 @@ func NewConnection(conn *websocket.Conn, remoteAddr net.Addr, extraReader io.Rea
 		}()
 	}
 
-	return &connection{
-		conn:       conn,
-		remoteAddr: remoteAddr,
-		reader:     extraReader,
+	c := &connection{
+		conn:           conn,
+		remoteAddr:     remoteAddr,
+		reader:         extraReader,
+		fragmentConfig: dpiConfig,
 	}
+	
+	// Initialize fragment writer if DPI bypass is enabled
+	if dpiConfig != nil && dpiConfig.Enabled {
+		c.fragmentWriter = fragmenter.NewFragmentWriter(c, dpiConfig)
+	}
+	
+	return c
 }
 
 // Read implements net.Conn.Read()
@@ -73,14 +88,62 @@ func (c *connection) getReader() (io.Reader, error) {
 
 // Write implements io.Writer.
 func (c *connection) Write(b []byte) (int, error) {
+	// If DPI bypass is enabled and we have a fragment writer, use it
+	if c.fragmentWriter != nil && c.fragmentConfig != nil && c.fragmentConfig.Enabled {
+		// Fragment the data and send in chunks
+		return c.writeFragmented(b)
+	}
+	
+	// Normal write without fragmentation
 	if err := c.conn.WriteMessage(websocket.BinaryMessage, b); err != nil {
 		return 0, err
 	}
 	return len(b), nil
 }
 
+// writeFragmented writes data in fragments to bypass DPI
+func (c *connection) writeFragmented(b []byte) (int, error) {
+	totalWritten := 0
+	remaining := b
+	
+	for len(remaining) > 0 {
+		// Calculate fragment size
+		fragmentSize := c.fragmentConfig.FragmentSize
+		if fragmentSize <= 0 {
+			fragmentSize = fragmenter.DefaultFragmentSize
+		}
+		if int32(len(remaining)) < fragmentSize {
+			fragmentSize = int32(len(remaining))
+		}
+		
+		// Write fragment
+		if err := c.conn.WriteMessage(websocket.BinaryMessage, remaining[:fragmentSize]); err != nil {
+			return totalWritten, err
+		}
+		
+		totalWritten += int(fragmentSize)
+		remaining = remaining[fragmentSize:]
+		
+		// Apply delay between fragments if configured
+		if c.fragmentConfig.FragmentDelay > 0 && len(remaining) > 0 {
+			time.Sleep(time.Duration(c.fragmentConfig.FragmentDelay) * time.Millisecond)
+		}
+	}
+	
+	return totalWritten, nil
+}
+
 func (c *connection) WriteMultiBuffer(mb buf.MultiBuffer) error {
 	mb = buf.Compact(mb)
+	
+	// If DPI bypass is enabled, use fragmented writing
+	if c.fragmentWriter != nil && c.fragmentConfig != nil && c.fragmentConfig.Enabled {
+		err := c.fragmentWriter.WriteMultiBuffer(mb)
+		buf.ReleaseMulti(mb)
+		return err
+	}
+	
+	// Normal write without fragmentation
 	mb, err := buf.WriteMultiBuffer(c, mb)
 	buf.ReleaseMulti(mb)
 	return err

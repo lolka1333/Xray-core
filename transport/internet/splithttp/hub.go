@@ -21,6 +21,7 @@ import (
 	http_proto "github.com/xtls/xray-core/common/protocol/http"
 	"github.com/xtls/xray-core/common/signal/done"
 	"github.com/xtls/xray-core/transport/internet"
+	"github.com/xtls/xray-core/transport/internet/fragmenter"
 	"github.com/xtls/xray-core/transport/internet/reality"
 	"github.com/xtls/xray-core/transport/internet/stat"
 	"github.com/xtls/xray-core/transport/internet/tls"
@@ -283,12 +284,33 @@ func (h *requestHandler) ServeHTTP(writer http.ResponseWriter, request *http.Req
 			Reader:         request.Body,
 			ResponseWriter: writer,
 		}
-		conn := splitConn{
-			writer:     httpSC,
-			reader:     httpSC,
-			remoteAddr: remoteAddr,
-			localAddr:  h.localAddr,
+		
+		// Create DPI bypass configuration if enabled
+		var dpiConfig *fragmenter.FragmentConfig
+		if h.config.DpiBypassEnabled {
+			dpiConfig = &fragmenter.FragmentConfig{
+				Enabled:       true,
+				FragmentSize:  h.config.DpiFragmentSize,
+				FragmentDelay: h.config.DpiFragmentDelay,
+				RandomSize:    h.config.DpiRandomSize,
+				MinSize:       h.config.DpiMinSize,
+				MaxSize:       h.config.DpiMaxSize,
+			}
 		}
+		
+		conn := splitConn{
+			writer:         httpSC,
+			reader:         httpSC,
+			remoteAddr:     remoteAddr,
+			localAddr:      h.localAddr,
+			fragmentConfig: dpiConfig,
+		}
+		
+		// Initialize fragment writer if DPI bypass is enabled
+		if dpiConfig != nil && dpiConfig.Enabled {
+			conn.fragmentWriter = fragmenter.NewFragmentWriter(httpSC, dpiConfig)
+		}
+		
 		if sessionId != "" { // if not stream-one
 			conn.reader = currentSession.uploadQueue
 		}

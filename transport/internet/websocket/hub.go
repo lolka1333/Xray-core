@@ -17,6 +17,7 @@ import (
 	"github.com/xtls/xray-core/common/net"
 	http_proto "github.com/xtls/xray-core/common/protocol/http"
 	"github.com/xtls/xray-core/transport/internet"
+	"github.com/xtls/xray-core/transport/internet/fragmenter"
 	v2tls "github.com/xtls/xray-core/transport/internet/tls"
 )
 
@@ -73,7 +74,20 @@ func (h *requestHandler) ServeHTTP(writer http.ResponseWriter, request *http.Req
 		}
 	}
 
-	h.ln.addConn(NewConnection(conn, remoteAddr, extraReader, h.ln.config.HeartbeatPeriod))
+	// Create DPI bypass configuration if enabled
+	var dpiConfig *fragmenter.FragmentConfig
+	if h.ln.config.DpiBypassEnabled {
+		dpiConfig = &fragmenter.FragmentConfig{
+			Enabled:       true,
+			FragmentSize:  h.ln.config.DpiFragmentSize,
+			FragmentDelay: h.ln.config.DpiFragmentDelay,
+			RandomSize:    h.ln.config.DpiRandomSize,
+			MinSize:       h.ln.config.DpiMinSize,
+			MaxSize:       h.ln.config.DpiMaxSize,
+		}
+	}
+	
+	h.ln.addConn(NewConnectionWithDPI(conn, remoteAddr, extraReader, h.ln.config.HeartbeatPeriod, dpiConfig))
 }
 
 type Listener struct {

@@ -13,4 +13,12 @@ message Config {
   bool accept_proxy_protocol = 4;
   uint32 ed = 5;
   uint32 heartbeatPeriod = 6;
+  
+  // DPI bypass configuration
+  bool dpiBypassEnabled = 7;           // Enable DPI bypass fragmentation
+  int32 dpiFragmentSize = 8;           // Fragment size in bytes (default: 15360 = 15KB)
+  int32 dpiFragmentDelay = 9;          // Delay between fragments in milliseconds
+  bool dpiRandomSize = 10;             // Use random fragment sizes
+  int32 dpiMinSize = 11;               // Minimum random size (default: 10KB)
+  int32 dpiMaxSize = 12;               // Maximum random size (default: 20KB)
 }

@@ -23,6 +23,7 @@ import (
 	"github.com/xtls/xray-core/common/uuid"
 	"github.com/xtls/xray-core/transport/internet"
 	"github.com/xtls/xray-core/transport/internet/browser_dialer"
+	"github.com/xtls/xray-core/transport/internet/fragmenter"
 	"github.com/xtls/xray-core/transport/internet/reality"
 	"github.com/xtls/xray-core/transport/internet/stat"
 	"github.com/xtls/xray-core/transport/internet/tls"
@@ -342,8 +343,23 @@ func Dial(ctx context.Context, dest net.Destination, streamSettings *internet.Me
 	var closed atomic.Int32
 
 	reader, writer := io.Pipe()
+	
+	// Create DPI bypass configuration if enabled
+	var dpiConfig *fragmenter.FragmentConfig
+	if transportConfiguration.DpiBypassEnabled {
+		dpiConfig = &fragmenter.FragmentConfig{
+			Enabled:       true,
+			FragmentSize:  transportConfiguration.DpiFragmentSize,
+			FragmentDelay: transportConfiguration.DpiFragmentDelay,
+			RandomSize:    transportConfiguration.DpiRandomSize,
+			MinSize:       transportConfiguration.DpiMinSize,
+			MaxSize:       transportConfiguration.DpiMaxSize,
+		}
+	}
+	
 	conn := splitConn{
-		writer: writer,
+		writer:         writer,
+		fragmentConfig: dpiConfig,
 		onClose: func() {
 			if closed.Add(1) > 1 {
 				return
@@ -355,6 +371,11 @@ func Dial(ctx context.Context, dest net.Destination, streamSettings *internet.Me
 				xmuxClient2.OpenUsage.Add(-1)
 			}
 		},
+	}
+	
+	// Initialize fragment writer if DPI bypass is enabled
+	if dpiConfig != nil && dpiConfig.Enabled {
+		conn.fragmentWriter = fragmenter.NewFragmentWriter(writer, dpiConfig)
 	}
 
 	var err error
@@ -402,9 +423,11 @@ func Dial(ctx context.Context, dest net.Destination, streamSettings *internet.Me
 	// uploadPipeReader, uploadPipeWriter := pipe.New(pipe.WithSizeLimit(maxUploadSize - 1))
 	uploadPipeReader, uploadPipeWriter := pipe.New(pipe.WithSizeLimit(maxUploadSize - buf.Size))
 
+	// Apply fragmentation to the upload writer if DPI bypass is enabled
 	conn.writer = uploadWriter{
-		uploadPipeWriter,
-		maxUploadSize,
+		Writer:         uploadPipeWriter,
+		maxLen:         maxUploadSize,
+		fragmentConfig: dpiConfig,
 	}
 
 	go func() {
@@ -478,17 +501,16 @@ func Dial(ctx context.Context, dest net.Destination, streamSettings *internet.Me
 // too large write up into multiple.
 type uploadWriter struct {
 	*pipe.Writer
-	maxLen int32
+	maxLen         int32
+	fragmentConfig *fragmenter.FragmentConfig
 }
 
 func (w uploadWriter) Write(b []byte) (int, error) {
-	/*
-		capacity := int(w.maxLen - w.Len())
-		if capacity > 0 && capacity < len(b) {
-			b = b[:capacity]
-		}
-	*/
-
+	// Apply DPI bypass fragmentation if enabled
+	if w.fragmentConfig != nil && w.fragmentConfig.Enabled {
+		return w.writeFragmented(b)
+	}
+	
 	buffer := buf.MultiBufferContainer{}
 	common.Must2(buffer.Write(b))
 
@@ -501,4 +523,42 @@ func (w uploadWriter) Write(b []byte) (int, error) {
 		writed += int(buff.Len())
 	}
 	return writed, nil
+}
+
+func (w uploadWriter) writeFragmented(b []byte) (int, error) {
+	totalWritten := 0
+	remaining := b
+	
+	for len(remaining) > 0 {
+		// Calculate fragment size
+		fragmentSize := w.fragmentConfig.FragmentSize
+		if fragmentSize <= 0 {
+			fragmentSize = fragmenter.DefaultFragmentSize
+		}
+		if int32(len(remaining)) < fragmentSize {
+			fragmentSize = int32(len(remaining))
+		}
+		
+		// Create buffer for fragment
+		buffer := buf.MultiBufferContainer{}
+		common.Must2(buffer.Write(remaining[:fragmentSize]))
+		
+		// Write fragment
+		for _, buff := range buffer.MultiBuffer {
+			err := w.WriteMultiBuffer(buf.MultiBuffer{buff})
+			if err != nil {
+				return totalWritten, err
+			}
+			totalWritten += int(buff.Len())
+		}
+		
+		remaining = remaining[fragmentSize:]
+		
+		// Apply delay between fragments if configured
+		if w.fragmentConfig.FragmentDelay > 0 && len(remaining) > 0 {
+			time.Sleep(time.Duration(w.fragmentConfig.FragmentDelay) * time.Millisecond)
+		}
+	}
+	
+	return totalWritten, nil
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/xtls/xray-core/common/net"
 	"github.com/xtls/xray-core/transport/internet"
 	"github.com/xtls/xray-core/transport/internet/browser_dialer"
+	"github.com/xtls/xray-core/transport/internet/fragmenter"
 	"github.com/xtls/xray-core/transport/internet/stat"
 	"github.com/xtls/xray-core/transport/internet/tls"
 )
@@ -100,7 +101,20 @@ func dialWebSocket(ctx context.Context, dest net.Destination, streamSettings *in
 			return nil, err
 		}
 
-		return NewConnection(conn, conn.RemoteAddr(), nil, wsSettings.HeartbeatPeriod), nil
+		// Create DPI bypass configuration if enabled
+		var dpiConfig *fragmenter.FragmentConfig
+		if wsSettings.DpiBypassEnabled {
+			dpiConfig = &fragmenter.FragmentConfig{
+				Enabled:       true,
+				FragmentSize:  wsSettings.DpiFragmentSize,
+				FragmentDelay: wsSettings.DpiFragmentDelay,
+				RandomSize:    wsSettings.DpiRandomSize,
+				MinSize:       wsSettings.DpiMinSize,
+				MaxSize:       wsSettings.DpiMaxSize,
+			}
+		}
+
+		return NewConnectionWithDPI(conn, conn.RemoteAddr(), nil, wsSettings.HeartbeatPeriod, dpiConfig), nil
 	}
 
 	header := wsSettings.GetRequestHeader()
@@ -126,7 +140,20 @@ func dialWebSocket(ctx context.Context, dest net.Destination, streamSettings *in
 		return nil, errors.New("failed to dial to (", uri, "): ", reason).Base(err)
 	}
 
-	return NewConnection(conn, conn.RemoteAddr(), nil, wsSettings.HeartbeatPeriod), nil
+	// Create DPI bypass configuration if enabled
+	var dpiConfig *fragmenter.FragmentConfig
+	if wsSettings.DpiBypassEnabled {
+		dpiConfig = &fragmenter.FragmentConfig{
+			Enabled:       true,
+			FragmentSize:  wsSettings.DpiFragmentSize,
+			FragmentDelay: wsSettings.DpiFragmentDelay,
+			RandomSize:    wsSettings.DpiRandomSize,
+			MinSize:       wsSettings.DpiMinSize,
+			MaxSize:       wsSettings.DpiMaxSize,
+		}
+	}
+
+	return NewConnectionWithDPI(conn, conn.RemoteAddr(), nil, wsSettings.HeartbeatPeriod, dpiConfig), nil
 }
 
 type delayDialConn struct {
