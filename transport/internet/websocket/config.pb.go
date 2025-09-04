@@ -31,6 +31,10 @@ type Config struct {
 	AcceptProxyProtocol bool              `protobuf:"varint,4,opt,name=accept_proxy_protocol,json=acceptProxyProtocol,proto3" json:"accept_proxy_protocol,omitempty"`
 	Ed                  uint32            `protobuf:"varint,5,opt,name=ed,proto3" json:"ed,omitempty"`
 	HeartbeatPeriod     uint32            `protobuf:"varint,6,opt,name=heartbeatPeriod,proto3" json:"heartbeatPeriod,omitempty"`
+	// DPI bypass settings for Russian RKN blocking
+	EnableFragmentation bool   `protobuf:"varint,7,opt,name=enable_fragmentation,json=enableFragmentation,proto3" json:"enable_fragmentation,omitempty"`
+	FragmentSize        uint32 `protobuf:"varint,8,opt,name=fragment_size,json=fragmentSize,proto3" json:"fragment_size,omitempty"`        // Size of each fragment in KB (default 15-20KB)
+	FragmentInterval    uint32 `protobuf:"varint,9,opt,name=fragment_interval,json=fragmentInterval,proto3" json:"fragment_interval,omitempty"` // Interval between fragments in milliseconds
 }
 
 func (x *Config) Reset() {

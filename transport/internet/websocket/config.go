@@ -26,6 +26,22 @@ func (c *Config) GetRequestHeader() http.Header {
 	return header
 }
 
+// GetFragmentSize returns the fragment size for DPI bypass
+func (c *Config) GetFragmentSize() uint32 {
+	if c.FragmentSize > 0 {
+		return c.FragmentSize
+	}
+	return 15 // Default 15KB
+}
+
+// GetFragmentInterval returns the fragment interval in milliseconds
+func (c *Config) GetFragmentInterval() uint32 {
+	if c.FragmentInterval > 0 {
+		return c.FragmentInterval
+	}
+	return 10 // Default 10ms
+}
+
 func init() {
 	common.Must(internet.RegisterProtocolConfigCreator(protocolName, func() interface{} {
 		return new(Config)

@@ -1,0 +1,51 @@
+{
+  "log": {
+    "loglevel": "debug"
+  },
+  "inbounds": [
+    {
+      "port": 10808,
+      "protocol": "socks",
+      "settings": {
+        "auth": "noauth",
+        "udp": true
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "example.com",
+            "port": 443,
+            "users": [
+              {
+                "id": "00000000-0000-0000-0000-000000000000",
+                "encryption": "none"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "example.com",
+          "allowInsecure": true
+        },
+        "wsSettings": {
+          "path": "/websocket",
+          "headers": {
+            "Host": "example.com"
+          },
+          "enable_fragmentation": true,
+          "fragment_size": 15,
+          "fragment_interval": 10
+        }
+      }
+    }
+  ]
+}

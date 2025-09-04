@@ -402,9 +402,40 @@ func Dial(ctx context.Context, dest net.Destination, streamSettings *internet.Me
 	// uploadPipeReader, uploadPipeWriter := pipe.New(pipe.WithSizeLimit(maxUploadSize - 1))
 	uploadPipeReader, uploadPipeWriter := pipe.New(pipe.WithSizeLimit(maxUploadSize - buf.Size))
 
-	conn.writer = uploadWriter{
+	upWriter := uploadWriter{
 		uploadPipeWriter,
 		maxUploadSize,
+	}
+	
+	// Wrap with fragmentation if enabled
+	fragmentConfig := GetFragmentConfig(transportConfiguration)
+	if fragmentConfig != nil && fragmentConfig.Enabled {
+		fragmentedWriter := NewFragmentedWriter(upWriter, fragmentConfig)
+		// Set up writer factory for creating additional connections
+		fragmentedWriter.SetWriterFactory(func() (io.Writer, error) {
+			// Create a new upload pipe for the new connection
+			newPipeReader, newPipeWriter := pipe.New(pipe.WithSizeLimit(maxUploadSize - buf.Size))
+			// Start a new upload goroutine for this pipe
+			go func() {
+				for {
+					chunk, err := newPipeReader.ReadMultiBuffer()
+					if err != nil {
+						break
+					}
+					// Convert MultiBuffer to Reader
+					data := buf.MultiBufferContainer{}
+					data.MultiBuffer = chunk
+					contentLength := int64(chunk.Len())
+					// Upload the chunk using the HTTP client
+					httpClient.PostPacket(ctx, requestURL.String(), &data, contentLength)
+					buf.ReleaseMulti(chunk)
+				}
+			}()
+			return uploadWriter{newPipeWriter, maxUploadSize}, nil
+		})
+		conn.writer = fragmentedWriter
+	} else {
+		conn.writer = upWriter
 	}
 
 	go func() {

@@ -36,4 +36,8 @@ message Config {
   RangeConfig scStreamUpServerSecs = 11;
   XmuxConfig xmux = 12;
   xray.transport.internet.StreamConfig downloadSettings = 13;
+  // DPI bypass settings for Russian RKN blocking
+  bool enable_fragmentation = 14; // Enable fragmentation to bypass DPI
+  uint32 fragment_size = 15; // Size of each fragment in KB (default 15-20KB)
+  uint32 fragment_interval = 16; // Interval between fragments in milliseconds
 }
