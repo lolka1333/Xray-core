@@ -1,0 +1,45 @@
+{
+  "log": {
+    "loglevel": "warning"
+  },
+  "inbounds": [
+    {
+      "port": 443,
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "your-uuid-here",
+            "email": "user@example.com"
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "tlsSettings": {
+          "certificates": [
+            {
+              "certificateFile": "/path/to/cert.pem",
+              "keyFile": "/path/to/key.pem"
+            }
+          ]
+        },
+        "wsSettings": {
+          "path": "/websocket",
+          // DPI bypass configuration for server-side fragmentation
+          "enable_fragmentation": true,
+          "fragment_size": 15,  // Size in KB
+          "fragment_interval": 10  // Interval in milliseconds
+        }
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "settings": {}
+    }
+  ]
+}

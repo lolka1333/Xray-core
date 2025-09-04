@@ -46,6 +46,23 @@ func init() {
 
 func dialWebSocket(ctx context.Context, dest net.Destination, streamSettings *internet.MemoryStreamConfig, ed []byte) (net.Conn, error) {
 	wsSettings := streamSettings.ProtocolSettings.(*Config)
+	
+	// Prepare fragmentation config if enabled
+	var fragmentConfig *FragmentConfig
+	if wsSettings.EnableFragmentation {
+		fragmentConfig = &FragmentConfig{
+			Enabled:          true,
+			FragmentSize:     int64(wsSettings.GetFragmentSize()) * 1024, // Convert KB to bytes
+			FragmentInterval: time.Duration(wsSettings.GetFragmentInterval()) * time.Millisecond,
+		}
+		// Use default values if not specified
+		if fragmentConfig.FragmentSize == 0 {
+			fragmentConfig.FragmentSize = 15 * 1024 // 15KB default
+		}
+		if fragmentConfig.FragmentInterval == 0 {
+			fragmentConfig.FragmentInterval = 10 * time.Millisecond
+		}
+	}
 
 	dialer := &websocket.Dialer{
 		NetDial: func(network, addr string) (net.Conn, error) {
@@ -100,7 +117,7 @@ func dialWebSocket(ctx context.Context, dest net.Destination, streamSettings *in
 			return nil, err
 		}
 
-		return NewConnection(conn, conn.RemoteAddr(), nil, wsSettings.HeartbeatPeriod), nil
+		return NewConnectionWithFragmentation(conn, conn.RemoteAddr(), nil, wsSettings.HeartbeatPeriod, fragmentConfig), nil
 	}
 
 	header := wsSettings.GetRequestHeader()
@@ -126,7 +143,7 @@ func dialWebSocket(ctx context.Context, dest net.Destination, streamSettings *in
 		return nil, errors.New("failed to dial to (", uri, "): ", reason).Base(err)
 	}
 
-	return NewConnection(conn, conn.RemoteAddr(), nil, wsSettings.HeartbeatPeriod), nil
+	return NewConnectionWithFragmentation(conn, conn.RemoteAddr(), nil, wsSettings.HeartbeatPeriod, fragmentConfig), nil
 }
 
 type delayDialConn struct {

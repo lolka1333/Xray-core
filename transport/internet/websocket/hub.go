@@ -73,7 +73,24 @@ func (h *requestHandler) ServeHTTP(writer http.ResponseWriter, request *http.Req
 		}
 	}
 
-	h.ln.addConn(NewConnection(conn, remoteAddr, extraReader, h.ln.config.HeartbeatPeriod))
+	// Prepare fragmentation config if enabled
+	var fragmentConfig *FragmentConfig
+	if h.ln.config.EnableFragmentation {
+		fragmentConfig = &FragmentConfig{
+			Enabled:          true,
+			FragmentSize:     int64(h.ln.config.GetFragmentSize()) * 1024, // Convert KB to bytes
+			FragmentInterval: time.Duration(h.ln.config.GetFragmentInterval()) * time.Millisecond,
+		}
+		// Use default values if not specified
+		if fragmentConfig.FragmentSize == 0 {
+			fragmentConfig.FragmentSize = 15 * 1024 // 15KB default
+		}
+		if fragmentConfig.FragmentInterval == 0 {
+			fragmentConfig.FragmentInterval = 10 * time.Millisecond
+		}
+	}
+	
+	h.ln.addConn(NewConnectionWithFragmentation(conn, remoteAddr, extraReader, h.ln.config.HeartbeatPeriod, fragmentConfig))
 }
 
 type Listener struct {

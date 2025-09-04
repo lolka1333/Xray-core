@@ -177,6 +177,10 @@ type Config struct {
 	ScStreamUpServerSecs *RangeConfig           `protobuf:"bytes,11,opt,name=scStreamUpServerSecs,proto3" json:"scStreamUpServerSecs,omitempty"`
 	Xmux                 *XmuxConfig            `protobuf:"bytes,12,opt,name=xmux,proto3" json:"xmux,omitempty"`
 	DownloadSettings     *internet.StreamConfig `protobuf:"bytes,13,opt,name=downloadSettings,proto3" json:"downloadSettings,omitempty"`
+	// DPI bypass settings for Russian RKN blocking
+	EnableFragmentation bool   `protobuf:"varint,14,opt,name=enable_fragmentation,json=enableFragmentation,proto3" json:"enable_fragmentation,omitempty"`
+	FragmentSize        uint32 `protobuf:"varint,15,opt,name=fragment_size,json=fragmentSize,proto3" json:"fragment_size,omitempty"`        // Size of each fragment in KB (default 15-20KB)
+	FragmentInterval    uint32 `protobuf:"varint,16,opt,name=fragment_interval,json=fragmentInterval,proto3" json:"fragment_interval,omitempty"` // Interval between fragments in milliseconds
 }
 
 func (x *Config) Reset() {
