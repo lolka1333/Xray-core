@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microsoft Azure - Cloud Computing Services</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+        }
+        
+        .logo {
+            width: 150px;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #0078d4;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+        
+        p {
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #666;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .feature {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+        
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .feature-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #0078d4;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background 0.3s ease;
+            margin-top: 20px;
+        }
+        
+        .btn:hover {
+            background: #005a9e;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+            color: #999;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <svg class="logo" viewBox="0 0 150 34" xmlns="http://www.w3.org/2000/svg">
+            <path d="M31.5 0H3.5C1.57 0 0 1.57 0 3.5V31.5C0 33.43 1.57 35 3.5 35H31.5C33.43 35 35 33.43 35 31.5V3.5C35 1.57 33.43 0 31.5 0Z" fill="#0078D4"/>
+        </svg>
+        
+        <h1>Microsoft Azure</h1>
+        <p>Build, deploy, and manage powerful applications with Microsoft's cloud computing platform.</p>
+        
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">☁️</div>
+                <h3>Cloud Services</h3>
+                <p>Scalable infrastructure</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔒</div>
+                <h3>Security</h3>
+                <p>Enterprise-grade protection</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🚀</div>
+                <h3>Performance</h3>
+                <p>High-speed computing</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🌍</div>
+                <h3>Global Reach</h3>
+                <p>Worldwide data centers</p>
+            </div>
+        </div>
+        
+        <p>Transform your business with intelligent cloud solutions. Azure provides over 200 products and services designed to bring new solutions to life.</p>
+        
+        <a href="#" class="btn">Get Started with Azure</a>
+        
+        <div class="footer">
+            <p>© 2024 Microsoft Corporation. All rights reserved.</p>
+            <p>Privacy | Terms of Use | Contact Us</p>
+        </div>
+    </div>
+</body>
+</html>

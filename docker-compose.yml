@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  xray:
+    image: teddysun/xray:latest
+    container_name: xray-anticensor
+    restart: unless-stopped
+    ports:
+      - "8443:8443"  # REALITY
+      - "2087:2087"  # WebSocket
+      - "2053:2053"  # Shadowsocks TCP
+      - "2053:2053/udp"  # Shadowsocks UDP
+    volumes:
+      - ./xray-server-config.json:/etc/xray/config.json:ro
+      - ./logs:/var/log/xray
+      - ./certs:/etc/xray/certs:ro
+    environment:
+      - TZ=UTC
+    networks:
+      - xray-network
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv4.tcp_congestion_control=bbr
+      - net.ipv4.tcp_fastopen=3
+      - net.core.default_qdisc=fq
+      - net.ipv4.tcp_slow_start_after_idle=0
+      - net.ipv4.tcp_mtu_probing=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10085/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  nginx-fallback:
+    image: nginx:alpine
+    container_name: nginx-fallback
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/html:/usr/share/nginx/html:ro
+      - ./certs:/etc/nginx/certs:ro
+    networks:
+      - xray-network
+    depends_on:
+      - xray
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_SCHEDULE=0 0 4 * * *
+    command: --interval 86400
+
+networks:
+  xray-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
