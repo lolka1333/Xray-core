@@ -1,0 +1,36 @@
+# Исправленные команды Docker для репозитория lolka1337/3xui
+
+## Быстрая команда (замена неправильной)
+# НЕПРАВИЛЬНО (ваша старая команда):
+# docker buildx build --push -t hsanaeii/3x-ui:main .
+
+# ПРАВИЛЬНО (исправленная команда):
+docker buildx build --push -t lolka1337/3xui:main -f .github/docker/Dockerfile .
+
+## Альтернативные варианты:
+
+# С тегом latest
+docker buildx build --push -t lolka1337/3xui:latest -t lolka1337/3xui:main -f .github/docker/Dockerfile .
+
+# Только сборка без push (для тестирования)
+docker buildx build -t lolka1337/3xui:main -f .github/docker/Dockerfile .
+
+# Сборка + push отдельно
+docker buildx build -t lolka1337/3xui:main -f .github/docker/Dockerfile .
+docker push lolka1337/3xui:main
+
+## Если образ уже собран с неправильным именем:
+# Переименовать существующий образ
+docker tag hsanaeii/3x-ui:main lolka1337/3xui:main
+docker push lolka1337/3xui:main
+
+# Удалить старый тег (опционально)
+docker rmi hsanaeii/3x-ui:main
+
+## Проверка авторизации:
+docker login
+# Введите: username = lolka1337, password = ваш пароль или токен
+
+## Проверка образа после push:
+docker pull lolka1337/3xui:main
+docker images | grep lolka1337
