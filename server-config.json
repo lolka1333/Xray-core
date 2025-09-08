@@ -32,10 +32,7 @@
           "headers": {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
           },
-          "xPaddingBytes": {
-            "from": 100,
-            "to": 1000
-          }
+          "xPaddingBytes": "100-1000"
         },
         "realitySettings": {
           "show": false,
