@@ -1,0 +1,90 @@
+{
+  "log": {
+    "loglevel": "info"
+  },
+  "inbounds": [
+    {
+      "tag": "socks-in",
+      "port": 1080,
+      "protocol": "socks",
+      "settings": {
+        "auth": "noauth",
+        "udp": true
+      }
+    },
+    {
+      "tag": "http-in",
+      "port": 8080,
+      "protocol": "http",
+      "settings": {}
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "vless-pq-out",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "YOUR_SERVER_IP_OR_DOMAIN",
+            "port": 443,
+            "users": [
+              {
+                "id": "dd272be9-42fa-476d-b88e-face835c8217",
+                "flow": "xtls-rprx-vision",
+                "email": "example@example.com",
+                "encryption": "mlkem768x25519plus.native.600s.YOUR_CLIENT_MLKEM768_SEED_HERE"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "security": "reality",
+        "xhttpSettings": {
+          "host": "example.com",
+          "path": "/api/v1",
+          "mode": "auto",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+          },
+          "xPaddingBytes": {
+            "from": 100,
+            "to": 1000
+          }
+        },
+        "realitySettings": {
+          "serverName": "example.com",
+          "fingerprint": "chrome",
+          "publicKey": "YOUR_PUBLIC_KEY_CORRESPONDING_TO_SERVER_PRIVATE_KEY",
+          "shortId": "01234567",
+          "spiderX": "/",
+          "mldsa65Seed": "YOUR_CLIENT_MLDSA65_SEED_HERE"
+        },
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMptcp": true
+        }
+      }
+    },
+    {
+      "tag": "direct",
+      "protocol": "freedom",
+      "settings": {}
+    }
+  ],
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      {
+        "type": "field",
+        "inboundTag": [
+          "socks-in",
+          "http-in"
+        ],
+        "outboundTag": "vless-pq-out"
+      }
+    ]
+  }
+}
