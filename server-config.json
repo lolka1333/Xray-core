@@ -4,6 +4,16 @@
   },
   "inbounds": [
     {
+      "tag": "shadowsocks-in",
+      "port": 8388,
+      "protocol": "shadowsocks",
+      "settings": {
+        "method": "aes-256-gcm",
+        "password": "your-strong-password-here",
+        "network": "tcp,udp"
+      }
+    },
+    {
       "tag": "vless-pq-in",
       "port": 443,
       "protocol": "vless",

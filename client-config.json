@@ -17,6 +17,16 @@
       "port": 8080,
       "protocol": "http",
       "settings": {}
+    },
+    {
+      "tag": "shadowsocks-in",
+      "port": 1081,
+      "protocol": "shadowsocks",
+      "settings": {
+        "method": "aes-256-gcm",
+        "password": "your-strong-password-here",
+        "network": "tcp,udp"
+      }
     }
   ],
   "outbounds": [
@@ -78,7 +88,8 @@
         "type": "field",
         "inboundTag": [
           "socks-in",
-          "http-in"
+          "http-in",
+          "shadowsocks-in"
         ],
         "outboundTag": "vless-pq-out"
       }
