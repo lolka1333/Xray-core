@@ -1,0 +1,48 @@
+{
+  "log": {
+    "loglevel": "info"
+  },
+  "inbounds": [
+    {
+      "tag": "vless-tls-in",
+      "port": 8443,
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "dd272be9-42fa-476d-b88e-face835c8217",
+            "flow": "xtls-rprx-vision",
+            "email": "example@example.com"
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "tls",
+        "tlsSettings": {
+          "certificates": [
+            {
+              "certificateFile": "/path/to/certificate.crt",
+              "keyFile": "/path/to/private.key"
+            }
+          ],
+          "serverName": "your-domain.com"
+        }
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": ["http", "tls", "quic"]
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "direct",
+      "protocol": "freedom",
+      "settings": {
+        "domainStrategy": "UseIPv4"
+      }
+    }
+  ]
+}
