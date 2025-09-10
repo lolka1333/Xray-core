@@ -1,0 +1,102 @@
+{
+  "log": {
+    "loglevel": "warning"
+  },
+  "inbounds": [
+    {
+      "tag": "vless-pq-in",
+      "port": 443,
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "dd272be9-42fa-476d-b88e-face835c8217",
+            "flow": "xtls-rprx-vision",
+            "email": "example@example.com"
+          }
+        ],
+        "decryption": "none",
+        "fallbacks": [
+          {
+            "dest": "nginx:8080",
+            "xver": 1
+          },
+          {
+            "path": "/api/v2/",
+            "dest": "nginx:8080",
+            "xver": 1
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "tcpSettings": {
+          "acceptProxyProtocol": false,
+          "header": {
+            "type": "none"
+          }
+        },
+        "realitySettings": {
+          "show": false,
+          "dest": "discord.com:443",
+          "xver": 0,
+          "serverNames": [
+            "discord.com",
+            "www.discord.com",
+            "cdn.discordapp.com"
+          ],
+          "privateKey": "CDwUEhHCg_I_eT-w29Bllkgbckr5QfLIbPUv4-ZVy3U",
+          "maxTimeDiff": 60000,
+          "shortIds": [
+            "",
+            "a1b2c3",
+            "def456",
+            "789abc"
+          ]
+        }
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": ["http", "tls", "quic"]
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "direct",
+      "protocol": "freedom",
+      "settings": {
+        "domainStrategy": "UseIPv4"
+      }
+    },
+    {
+      "tag": "block",
+      "protocol": "blackhole",
+      "settings": {
+        "response": {
+          "type": "http"
+        }
+      }
+    }
+  ],
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      {
+        "type": "field",
+        "ip": [
+          "geoip:private"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "protocol": [
+          "bittorrent"
+        ],
+        "outboundTag": "block"
+      }
+    ]
+  }
+}
