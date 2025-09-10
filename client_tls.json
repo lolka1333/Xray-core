@@ -1,0 +1,95 @@
+{
+  "log": {
+    "loglevel": "warning"
+  },
+  "inbounds": [
+    {
+      "tag": "mixed-in",
+      "port": 10999,
+      "protocol": "mixed",
+      "settings": {
+        "auth": "noauth",
+        "udp": true
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "vless-tls-out",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "YOUR_SERVER_IP",
+            "port": 8443,
+            "users": [
+              {
+                "id": "dd272be9-42fa-476d-b88e-face835c8217",
+                "flow": "xtls-rprx-vision",
+                "email": "example@example.com",
+                "encryption": "none"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "your-domain.com",
+          "allowInsecure": false
+        }
+      }
+    },
+    {
+      "tag": "direct",
+      "protocol": "freedom",
+      "settings": {
+        "domainStrategy": "UseIPv4",
+        "fragment": {
+          "packets": "tlshello",
+          "length": "50-100",
+          "interval": "10-20"
+        }
+      }
+    }
+  ],
+  "routing": {
+    "rules": [
+      {
+        "type": "field",
+        "ip": [
+          "10.0.0.0/8",
+          "172.16.0.0/12",
+          "192.168.0.0/16",
+          "127.0.0.0/8"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "domain": [
+          "yandex.ru",
+          "yandex.com", 
+          "mail.ru",
+          "vk.com",
+          "ok.ru",
+          "rutube.ru",
+          "gosuslugi.ru",
+          "sberbank.ru",
+          "tinkoff.ru",
+          "avito.ru",
+          "ozon.ru",
+          "wildberries.ru"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "inboundTag": ["mixed-in"],
+        "outboundTag": "vless-tls-out"
+      }
+    ]
+  }
+}
