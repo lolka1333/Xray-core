@@ -34,15 +34,9 @@
             "Upgrade-Insecure-Requests": "1"
           },
           "xPaddingBytes": "100-1000",
-          "scMaxEachPostBytes": {
-            "from": 1000000,
-            "to": 16777216
-          },
+          "scMaxEachPostBytes": "1000000-16777216",
           "scMaxBufferedPosts": 64,
-          "scMinPostsIntervalMs": {
-            "from": 30,
-            "to": 200
-          }
+          "scMinPostsIntervalMs": "30-200"
         },
         "realitySettings": {
           "show": false,

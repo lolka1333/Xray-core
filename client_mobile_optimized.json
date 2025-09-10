@@ -49,28 +49,13 @@
             "User-Agent": "Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
           },
           "xPaddingBytes": "50-500",
-          "scMaxEachPostBytes": {
-            "from": 8192,
-            "to": 16384
-          },
+          "scMaxEachPostBytes": "8192-16384",
           "scMaxBufferedPosts": 16,
-          "scMinPostsIntervalMs": {
-            "from": 50,
-            "to": 200
-          },
+          "scMinPostsIntervalMs": "50-200",
           "xmux": {
-            "maxConcurrency": {
-              "from": 4,
-              "to": 8
-            },
-            "hMaxRequestTimes": {
-              "from": 100,
-              "to": 200
-            },
-            "hMaxReusableSecs": {
-              "from": 300,
-              "to": 600
-            },
+            "maxConcurrency": "4-8",
+            "hMaxRequestTimes": "100-200",
+            "hMaxReusableSecs": "300-600",
             "hKeepAlivePeriod": 10
           }
         },

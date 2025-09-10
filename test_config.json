@@ -10,11 +10,6 @@
       "settings": {
         "auth": "noauth",
         "udp": true
-      },
-      "sniffing": {
-        "enabled": true,
-        "destOverride": ["http", "tls", "quic"],
-        "metadataOnly": false
       }
     }
   ],
@@ -46,90 +41,35 @@
           "path": "/api/v2/",
           "mode": "auto",
           "headers": {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.5",
-            "Accept-Encoding": "gzip, deflate",
-            "DNT": "1",
-            "Connection": "keep-alive",
-            "Upgrade-Insecure-Requests": "1"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
           },
-          "xPaddingBytes": "100-1000",
-          "scMaxEachPostBytes": "1000000-16777216",
-          "scMaxBufferedPosts": 32,
-          "scMinPostsIntervalMs": "10-100"
+          "xPaddingBytes": "100-1000"
         },
         "realitySettings": {
           "serverName": "www.microsoft.com",
           "fingerprint": "chrome",
           "publicKey": "okCTU2pbihlxO1Pp9JeZXPAXWnBrjky3YBdaKxHhQVI",
           "shortId": "01234567",
-          "spiderX": "/?p=10-20&c=5-10&t=1-3&i=5-10&r=3-7",
+          "spiderX": "/",
           "mldsa65Seed": "1t9524nYvj4Vb0v5IUe-UgrD1JzY9cmiwADRSMzagykdU0yQEcEEOLPNagf8ZJKL3k1r2AlVRVV7-pc2sPgJLw_TgVAENRUO7p7T1BYfyx8fA4Rx_5LH3sdOXQNDr6WiCs35CfkATD2DqKL-FPS6d1xq62YHcDDYPSSHGOvbNzq8-xz9l3Q7cN1vv7UKSA7X5pQ8BvhhpGrwl-tif0dfjH67yxf6qV3PZ2_hGr5ownWu-HmJNXJulnAdg0nUn33tckFOXpiH049qXDSb9zJ27PbVk0G0LITof2ZU5WGEStXYT-FxOfCsklnHFxtRxR7q7b0rXF9Vt8vrLMwA1RWXHC7REOr35knbj3Cix-xPAVkt-Yb0Cx7zYfExF2GmwhYYPLW5qpPQ4WwtxY9NWc969ehgSG8_mU3DEY0MLVYDrX6R8qra1vQ5fhjc0HcnI3J_18OR3WoS3DWyVHgaUH2r3syorDSmNbK_GaBTwhI4jvulnuQU4IWl99f73RTHjOw-zZqF9qsL7EeQAhz7duEOCUbNPtil4LBYKbV-Ld3kwV5ItSYbSaiLyA9BijWJuFQ7hOZCAzMgr_xDNsYvgfO-6iHCvBlZowKyUx8iuCGG67xjcAm_ArUkF-qL0Y2rA88OlzLSzEiZibX_WSMBB4ahMDhf5Mon16JKbZoSEUmJzdEZ257lZR8pZ86kGLki_NHvOGIWoOm5q1t8Jjwr5QnD_Ur5gxx7RnBaX5-pvrz7AN5zUHBLBx4fFda5rkPV7NtjIFxxSJ8fQ8hgcyyx0JE9MQCXXasHQNOAT93PQO14kLXeofXRXuIwmsEljELNfMx0malO4EPHsH0Pb5YNvEgKmvzg-IGQI_-ajoopeDgc6-1A8qYTGD2RYRekztKfOKkSJhWPxDj3gLD3jlcUaGl7cFvnTh6rWkIrK6-K1-5pSTbqc8cVFbEyQBrzpBiqpWitnruplwaM1AYTK19ZPZafh9SF485NIxRH93JX8QvQY-5roMUNJk_zZ8-d1t6LE-2J8iyASWhdOsXFwwk8a9pIekc8EB4Xfi7scSBsKE3QktJh4m0v4Q2ji8KncQ5v8uP9OB2bkiqcUpOU4B3l1RJ4FP9W2mNYCaekib34c0os1FeZ6OEJw3-6fs1t3mZvBsrKe9N_jMraWbHS7wskVGRtpphwfU0D1KjZxxbLMdkxtoYihjksL1I6L9BLdqjYVcwCFTszpeq12UIO7xd6S0ogQzMFB6scuOC4f7e3BxCCPNUwkVjohcESNgEMVwlyuq_3uV3w4M-WtkPYvalCurMUChXgZCbROrztaxXnX12WUKI-zTVpCS8UeYqejJUahdCAhQw6DmR8_6QIl7ghbDRYMaHn64S0oXj4gUAvT-u0pcNkGc76Lv7czJZYYNmwHrPjFqLmYxYmmDIV_3aosS2xQqZ--rTbZonut4hQB1ox2r0zWi2ONAQCSfPR41NPBsp5VA3hzOElfeeHJtRXLq0m6S5A1YGHHjM_4DRUqNnKocHWmnQmT7fC9lm3mOYGqhT3RORXt9wiIs7Lx2saRgUBDo2TVTzeDY-LONjL4aX8upGInH3rdHwD7xxyVxg9BZgb1HT7u6X0GMLSvQXgSWTBhwXfQYiDIQ-oZs4AOF1jEWvqtsdgPNHww5LcRl13rd9dY-jt0UFjYwu309J2MrVgMimlEtb-CmZJCGlgs5a8Cih8wN6u5BgoXyhs0zuHFVJFKO-NhuIsFBKzB3fDbayZ0mC3T3uiwfrh1XczdbPtjxpc9QgMKLLEyT3ejwLWN3fv6AalkLKuANczoqHaZze-KBuqJnyXLtsIArqx9rc84lwanvj6SrlMi_oRFP3n-zCJcjPiZYufGXkeK7ccrKftmzAjCYEXvPmVDyYiX5rRm7uOC1h3jZMyVc9RYoO0yGHOw9_GVZPdnBWRq5i4MuQDdUnCFh8CCxx0JlLcn-QWVUrHec0hOMLnLkaUyNRSh_ealGghC7HujeRUlSinn96ckWLMqT05DAiMsox4lalxWw1UhR4QqEMaU9nSptoDfWIec_7J4TSbxiB_AW1s2Xbae19V1YhVsQ6z4JFue1n166Up5lf7v1-uBMSIu5hX3-gmRMZRUTEyqE0WTun-VWmimuZud9B0QOXQQqw7aaVQssWtq3Q_Rz7_b2GSesI0X5gYaehlUUWJf9vZmVoRJ52iTPM9aXk1A_2WjiS9LooDF3DmqMUO2hftfoDzND7ViSvqPVFMEgwpzVkoTQT7q4L6WmS3Hqg_giAf8IloaLyeo6RCLJeMlqL4OGSYCao1HkF_xMwecqIeZ70I3RrKcVKBTTLfGzvP-yxxjLDhGTOMrp6cURH8QxZrklA4DT4lF5ZyyYX5AGiRE6viWroGSBPUHhgNKhVW--NIvVboL-xtb4FLLBk34aHmTpNrJ-WZY8QFkx8elRrpqxGqTHuIYoYVtA3wns3v7xE9NKRpPyus33fHVtuCD5fazPcZablrTrEibhkhCdLUe2wU9JhtV2kTBHE0DkgfwiYwqQgAx9R0dbUXVfkWuw6TxieRj3gK6958HXrTAkZVc16EzChRsMcI8zFW24b_qkOCeoZFlah8RGg"
         },
         "sockopt": {
           "tcpFastOpen": true,
-          "tcpMptcp": true,
-          "tcpKeepAliveInterval": 30,
-          "tcpKeepAliveIdle": 300,
-          "tcpCongestion": "bbr",
-          "mark": 255,
-          "domainStrategy": "UseIPv4"
+          "tcpMptcp": true
         }
       }
     },
     {
       "tag": "direct",
       "protocol": "freedom",
-      "settings": {
-        "domainStrategy": "UseIPv4",
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        }
-      },
-      "streamSettings": {
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMptcp": true,
-          "tcpCongestion": "bbr"
-        }
-      }
-    },
-    {
-      "tag": "block",
-      "protocol": "blackhole",
-      "settings": {
-        "response": {
-          "type": "http"
-        }
-      }
+      "settings": {}
     }
   ],
   "routing": {
-    "domainStrategy": "IPIfNonMatch",
     "rules": [
       {
         "type": "field",
-        "domain": [
-          "geosite:category-ads-all"
-        ],
-        "outboundTag": "block"
-      },
-      {
-        "type": "field",
-        "ip": [
-          "geoip:private",
-          "geoip:ru"
-        ],
-        "outboundTag": "direct"
-      },
-      {
-        "type": "field",
-        "inboundTag": [
-          "mixed-in"
-        ],
+        "inboundTag": ["mixed-in"],
         "outboundTag": "vless-pq-out"
       }
     ]
