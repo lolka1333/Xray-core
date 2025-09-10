@@ -1,0 +1,74 @@
+{
+  "log": {
+    "loglevel": "info"
+  },
+  "inbounds": [
+    {
+      "tag": "mixed-in",
+      "port": 10999,
+      "protocol": "mixed",
+      "settings": {
+        "auth": "noauth",
+        "udp": true
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "vless-out",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "51.89.39.34",
+            "port": 8443,
+            "users": [
+              {
+                "id": "dd272be9-42fa-476d-b88e-face835c8217",
+                "flow": "",
+                "email": "example@example.com",
+                "encryption": "none"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "reality",
+        "wsSettings": {
+          "host": "www.microsoft.com",
+          "path": "/api/v2/",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+          }
+        },
+        "realitySettings": {
+          "serverName": "www.microsoft.com",
+          "fingerprint": "chrome",
+          "publicKey": "okCTU2pbihlxO1Pp9JeZXPAXWnBrjky3YBdaKxHhQVI",
+          "shortId": "01234567",
+          "spiderX": "/"
+        },
+        "sockopt": {
+          "tcpFastOpen": false,
+          "tcpMptcp": false
+        }
+      }
+    },
+    {
+      "tag": "direct",
+      "protocol": "freedom",
+      "settings": {}
+    }
+  ],
+  "routing": {
+    "rules": [
+      {
+        "type": "field",
+        "inboundTag": ["mixed-in"],
+        "outboundTag": "vless-out"
+      }
+    ]
+  }
+}
