@@ -1,11 +1,11 @@
 {
   "log": {
-    "loglevel": "warning"
+    "loglevel": "info"
   },
   "inbounds": [
     {
       "tag": "vless-pq-in",
-      "port": 443,
+      "port": 8443,
       "protocol": "vless",
       "settings": {
         "clients": [
@@ -15,45 +15,46 @@
             "email": "example@example.com"
           }
         ],
-        "decryption": "none",
-        "fallbacks": [
-          {
-            "dest": "nginx:8080",
-            "xver": 1
-          },
-          {
-            "path": "/api/v2/",
-            "dest": "nginx:8080",
-            "xver": 1
-          }
-        ]
+        "decryption": "mlkem768x25519plus.native.600s.I9pRa0iDLo2HbQB4a4SIqNAg1iaGvhLx_jWOKeZahKDJDb1h97c0FqJp1V8wZwrfhPmor854yhjj9FqZVlhQRg"
       },
       "streamSettings": {
-        "network": "tcp",
+        "network": "xhttp",
         "security": "reality",
-        "tcpSettings": {
-          "acceptProxyProtocol": false,
-          "header": {
-            "type": "none"
-          }
+        "xhttpSettings": {
+          "host": "www.microsoft.com",
+          "path": "/api/v2/",
+          "mode": "auto",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Accept-Encoding": "gzip, deflate",
+            "DNT": "1",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1"
+          },
+          "xPaddingBytes": "100-1000",
+          "scMaxEachPostBytes": "1000000-16777216",
+          "scMaxBufferedPosts": 64,
+          "scMinPostsIntervalMs": "30-200"
         },
         "realitySettings": {
           "show": false,
-          "dest": "discord.com:443",
+          "dest": "www.microsoft.com:443",
           "xver": 0,
           "serverNames": [
-            "discord.com",
-            "www.discord.com",
-            "cdn.discordapp.com"
+            "www.microsoft.com",
+            "microsoft.com",
+            "login.microsoftonline.com"
           ],
           "privateKey": "CDwUEhHCg_I_eT-w29Bllkgbckr5QfLIbPUv4-ZVy3U",
           "maxTimeDiff": 60000,
           "shortIds": [
-            "",
-            "a1b2c3",
-            "def456",
-            "789abc"
-          ]
+            "01234567",
+            "89abcdef",
+            "fedcba98"
+          ],
+          "mldsa65Seed": "at97S8CG39sznaPX1rrfYuBYEmn96-9KAbaeKMPNeGs"
         }
       },
       "sniffing": {
