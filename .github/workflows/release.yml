@@ -171,8 +171,6 @@ jobs:
     steps:
       - name: Checkout codebase
         uses: actions/checkout@v7
-        with:
-          submodules: recursive
 
       - name: Set up NDK
         if: matrix.goos == 'android'

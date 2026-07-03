@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"time"
 
-	utls "github.com/refraction-networking/utls"
+	utls "github.com/lolka1333/utls"
 	"github.com/xtls/xray-core/common/errors"
 	"github.com/xtls/xray-core/common/net"
 	"github.com/xtls/xray-core/common/platform/filesystem"

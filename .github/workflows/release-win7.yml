@@ -84,8 +84,6 @@ jobs:
     steps:
       - name: Checkout codebase
         uses: actions/checkout@v7
-        with:
-          submodules: recursive
 
       - name: Show workflow information
         run: |

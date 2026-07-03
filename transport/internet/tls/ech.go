@@ -15,7 +15,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	utls "github.com/refraction-networking/utls"
+	utls "github.com/lolka1333/utls"
 	"github.com/xtls/xray-core/common/crypto"
 	"golang.org/x/net/http2"
 

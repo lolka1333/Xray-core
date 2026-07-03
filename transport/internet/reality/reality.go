@@ -22,7 +22,7 @@ import (
 	"unsafe"
 
 	"github.com/cloudflare/circl/sign/mldsa/mldsa65"
-	utls "github.com/refraction-networking/utls"
+	utls "github.com/lolka1333/utls"
 	"github.com/xtls/reality"
 	"github.com/xtls/xray-core/common/crypto"
 	"github.com/xtls/xray-core/common/errors"
