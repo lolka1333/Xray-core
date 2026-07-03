@@ -1,0 +1,3 @@
+[submodule "utls"]
+	path = utls
+	url = https://github.com/lolka1333/utls.git
