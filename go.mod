@@ -10,7 +10,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/klauspost/cpuid/v2 v2.3.0
-	github.com/lolka1333/utls v0.0.0-20260703070602-9cc94aed4923
+	github.com/lolka1333/utls v0.0.0-20260705155920-35d47a497fbd
 	github.com/miekg/dns v1.1.72
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pion/stun/v3 v3.1.6
