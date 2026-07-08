@@ -1,0 +1,55 @@
+{
+  "log": {
+    "loglevel": "info"
+  },
+  "inbounds": [
+    {
+      "tag": "vless-in",
+      "port": 8443,
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "dd272be9-42fa-476d-b88e-face835c8217",
+            "flow": "xtls-rprx-vision",
+            "email": "example@example.com"
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "security": "reality",
+        "xhttpSettings": {
+          "host": "www.microsoft.com",
+          "path": "/",
+          "mode": "auto"
+        },
+        "realitySettings": {
+          "show": false,
+          "dest": "www.microsoft.com:443",
+          "xver": 0,
+          "serverNames": [
+            "www.microsoft.com"
+          ],
+          "privateKey": "CDwUEhHCg_I_eT-w29Bllkgbckr5QfLIbPUv4-ZVy3U",
+          "maxTimeDiff": 60000,
+          "shortIds": [
+            "01234567"
+          ]
+        },
+        "sockopt": {
+          "tcpFastOpen": false,
+          "tcpMptcp": false
+        }
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "direct",
+      "protocol": "freedom",
+      "settings": {}
+    }
+  ]
+}

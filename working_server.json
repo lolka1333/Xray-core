@@ -1,0 +1,81 @@
+{
+  "log": {
+    "loglevel": "info"
+  },
+  "inbounds": [
+    {
+      "tag": "vless-pq-in",
+      "port": 8443,
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "dd272be9-42fa-476d-b88e-face835c8217",
+            "flow": "xtls-rprx-vision",
+            "email": "example@example.com"
+          }
+        ],
+        "decryption": "mlkem768x25519plus.native.600s.I9pRa0iDLo2HbQB4a4SIqNAg1iaGvhLx_jWOKeZahKDJDb1h97c0FqJp1V8wZwrfhPmor854yhjj9FqZVlhQRg"
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "security": "reality",
+        "xhttpSettings": {
+          "host": "www.microsoft.com",
+          "path": "/api/v2/",
+          "mode": "stream-up",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Accept-Encoding": "gzip, deflate",
+            "DNT": "1",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1"
+          },
+          "xPaddingBytes": "100-1000",
+          "scMaxEachPostBytes": "8192-16384",
+          "scMaxBufferedPosts": 32,
+          "scMinPostsIntervalMs": "50-200"
+        },
+        "realitySettings": {
+          "show": false,
+          "dest": "www.microsoft.com:443",
+          "xver": 0,
+          "serverNames": [
+            "www.microsoft.com",
+            "microsoft.com"
+          ],
+          "privateKey": "CDwUEhHCg_I_eT-w29Bllkgbckr5QfLIbPUv4-ZVy3U",
+          "maxTimeDiff": 60000,
+          "shortIds": [
+            "01234567",
+            "89abcdef"
+          ],
+          "mldsa65Seed": "at97S8CG39sznaPX1rrfYuBYEmn96-9KAbaeKMPNeGs"
+        },
+        "sockopt": {
+          "tcpFastOpen": false,
+          "tcpMptcp": true,
+          "tcpKeepAliveInterval": 30,
+          "tcpKeepAliveIdle": 300
+        }
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "direct",
+      "protocol": "freedom",
+      "settings": {
+        "domainStrategy": "UseIPv4"
+      },
+      "streamSettings": {
+        "sockopt": {
+          "tcpFastOpen": false,
+          "tcpMptcp": true
+        }
+      }
+    }
+  ]
+}
